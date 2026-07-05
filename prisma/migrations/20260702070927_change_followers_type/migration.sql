@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Affiliate" ALTER COLUMN "followersCount" SET DEFAULT 0.0,
+ALTER COLUMN "followersCount" SET DATA TYPE DOUBLE PRECISION;

@@ -1,26 +1,247 @@
 @import "tailwindcss";
 
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/* LIGHT MODE — Apple HIG Design Tokens */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: 240 14% 96%;
+  --foreground: 240 6% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 6% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 6% 12%;
+  --primary: 211 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 9% 95%;
+  --secondary-foreground: 240 3% 43%;
+  --muted: 240 9% 95%;
+  --muted-foreground: 240 3% 54%;
+  --accent: 211 100% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 3 100% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 220 13% 91%;
+  --input: 240 14% 96%;
+  --ring: 211 100% 50%;
+  --radius: 1.25rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* DARK MODE Tokens */
+.dark {
+  --background: 240 3% 9%;
+  --foreground: 0 0% 100%;
+  --card: 240 2% 18%;
+  --card-foreground: 0 0% 100%;
+  --popover: 240 3% 9%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 211 100% 52%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 2% 23%;
+  --secondary-foreground: 240 2% 57%;
+  --muted: 240 2% 20%;
+  --muted-foreground: 240 2% 57%;
+  --accent: 211 100% 52%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 3 100% 62%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 2% 23%;
+  --input: 240 2% 20%;
+  --ring: 211 100% 52%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+*, *::before, *::after {
+  box-sizing: border-box;
+  border-color: hsl(var(--border));
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  overflow-x: hidden;
 }
+
+/* === APPLE CARD === */
+.apple-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E5EA;
+  border-radius: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s ease;
+}
+.dark .apple-card {
+  background-color: #2C2C2E;
+  border-color: #38383A;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.apple-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+}
+.dark .apple-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+/* === APPLE INPUT === */
+.apple-input {
+  height: 40px;
+  padding: 0 12px;
+  background-color: #F5F5F7;
+  border: 1.5px solid #E5E5EA;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #1D1D1F;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+}
+.dark .apple-input {
+  background-color: #1E1E1E;
+  border-color: #38383A;
+  color: #FFFFFF;
+}
+.apple-input::placeholder { color: #8E8E93; }
+.apple-input:focus {
+  border-color: #007AFF;
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.12);
+}
+
+/* === BUTTONS === */
+.apple-btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 36px; padding: 0 16px;
+  background-color: #007AFF; color: #FFFFFF;
+  font-size: 13px; font-weight: 600;
+  border-radius: 10px; border: none; cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  white-space: nowrap; user-select: none;
+}
+.apple-btn-primary:hover { background-color: #0066D6; }
+.apple-btn-primary:active { transform: scale(0.98); }
+.apple-btn-primary:disabled { opacity: 0.4; pointer-events: none; }
+
+.apple-btn-secondary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 36px; padding: 0 16px;
+  background-color: #F2F2F7; color: #1D1D1F;
+  font-size: 13px; font-weight: 500;
+  border-radius: 10px; border: 1.5px solid #E5E5EA; cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+.dark .apple-btn-secondary { background-color: #2C2C2E; color: #FFFFFF; border-color: #38383A; }
+.apple-btn-secondary:hover { background-color: #E8E8ED; border-color: #D1D1D6; }
+.dark .apple-btn-secondary:hover { background-color: #3A3A3C; }
+
+/* === STATUS BADGES === */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.01em;
+  white-space: nowrap; border: 1px solid transparent;
+}
+.badge-gray   { background:#F2F2F7; color:#4B4B53; border-color:#E5E5EA; }
+.badge-blue   { background:#EBF5FF; color:#0055B3; border-color:#CCE4FF; }
+.badge-sky    { background:#F0F9FF; color:#075985; border-color:#BAE6FD; }
+.badge-amber  { background:#FFF8E6; color:#92400E; border-color:#FDE68A; }
+.badge-orange { background:#FFF3E6; color:#9A3412; border-color:#FDBA74; }
+.badge-purple { background:#F5F0FF; color:#5B21B6; border-color:#DDD6FE; }
+.badge-green  { background:#EDFAF2; color:#14532D; border-color:#BBF7D0; }
+.badge-red    { background:#FFF1F0; color:#991B1B; border-color:#FCA5A5; }
+.badge-rose   { background:#FFF1F4; color:#9D174D; border-color:#FDA4AF; }
+.badge-teal   { background:#F0FDFA; color:#134E4A; border-color:#99F6E4; }
+.badge-violet { background:#F5F3FF; color:#4C1D95; border-color:#C4B5FD; }
+
+.dark .badge-gray   { background:rgba(142,142,147,.15); color:#AEAEB2; border-color:rgba(142,142,147,.25); }
+.dark .badge-blue   { background:rgba(10,132,255,.15);  color:#64B5FF; border-color:rgba(10,132,255,.25); }
+.dark .badge-sky    { background:rgba(90,200,250,.12);  color:#5AC8FA; border-color:rgba(90,200,250,.25); }
+.dark .badge-amber  { background:rgba(255,214,10,.12);  color:#FFD60A; border-color:rgba(255,214,10,.25); }
+.dark .badge-orange { background:rgba(255,149,0,.15);   color:#FF9500; border-color:rgba(255,149,0,.25); }
+.dark .badge-purple { background:rgba(191,90,242,.15);  color:#BF5AF2; border-color:rgba(191,90,242,.25); }
+.dark .badge-green  { background:rgba(52,199,89,.15);   color:#30D158; border-color:rgba(52,199,89,.25); }
+.dark .badge-red    { background:rgba(255,69,58,.15);   color:#FF453A; border-color:rgba(255,69,58,.25); }
+.dark .badge-rose   { background:rgba(255,55,95,.15);   color:#FF375F; border-color:rgba(255,55,95,.25); }
+.dark .badge-teal   { background:rgba(48,209,88,.12);   color:#30D158; border-color:rgba(48,209,88,.25); }
+.dark .badge-violet { background:rgba(94,92,230,.15);   color:#7C7CE0; border-color:rgba(94,92,230,.25); }
+
+/* === GLASSMORPHISM === */
+.glass {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+.dark .glass {
+  background: rgba(28,28,30,0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* === SCROLLBARS — Apple style === */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(142,142,147,0.25); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(142,142,147,0.45); }
+
+/* === ANIMATIONS === */
+.fade-in   { animation: fadeIn 0.2s ease-out forwards; }
+.slide-up  { animation: slideUp 0.22s cubic-bezier(0.16,1,0.3,1) forwards; }
+.fade-scale { animation: fadeScale 0.2s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(6px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes fadeScale {
+  from { opacity:0; transform:scale(0.97); }
+  to   { opacity:1; transform:scale(1); }
+}
+
+/* === TABLE UTILITIES === */
+.apple-table thead tr { background-color: #F9F9F9; }
+.dark .apple-table thead tr { background-color: rgba(30,30,30,0.6); }
+.apple-table tbody tr { transition: background-color 0.1s ease; }
+.apple-table tbody tr:hover { background-color: #FAFAFA; }
+.dark .apple-table tbody tr:hover { background-color: rgba(255,255,255,0.03); }
+.apple-table tbody tr+tr { border-top: 1px solid #F2F2F7; }
+.dark .apple-table tbody tr+tr { border-top: 1px solid rgba(56,56,58,0.5); }
+
+/* === FUNNEL === */
+.funnel-stage { transition: transform 0.2s ease, opacity 0.2s ease; }
+.funnel-stage:hover { transform: scale(1.02); filter: brightness(1.05); }

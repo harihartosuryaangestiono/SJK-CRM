@@ -1,0 +1,353 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  STAFF
+  PIC
+  VIEWER
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum CampaignStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+}
+
+enum ProgressCampaignStatus {
+  NOT_STARTED
+  PRODUCT_SENT
+  CREATOR_RECEIVED
+  VIDEO_RECORDING
+  VIDEO_UPLOADED
+  LIVE_SCHEDULED
+  LIVE_DONE
+  COMPLETED
+  PAID
+}
+
+model User {
+  id               String            @id @default(uuid())
+  email            String            @unique
+  passwordHash     String
+  name             String
+  role             Role              @default(STAFF)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  deletedAt        DateTime?
+  deletedBy        String?
+  
+  sessions         Session[]
+  affiliates       Affiliate[]       @relation("PicAffiliates")
+  deals            Deal[]            @relation("PicDeals")
+  contactHistory   ContactHistory[]
+  activities       Activity[]
+  notifications    Notification[]
+  tasks            Task[]            @relation("AssignedTasks")
+  createdTasks     Task[]            @relation("CreatedTasks")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+}
+
+model Affiliate {
+  id                    String            @id @default(uuid())
+  listingDate           DateTime?
+  username              String            @unique
+  name                  String?
+  niche                 String?
+  profileLink           String?
+  waContact             String?
+  followers             String?
+  followersCount        Float             @default(0.0)
+  gmv                   String?
+  gmvCount              Float             @default(0.0)
+  period                String?
+  activation            String?
+  curate                String?
+  contactConfirmation   String?
+  affiliateConfirmation String?
+  remarks               String?
+  
+  email                 String?
+  instagram             String?
+  status                String            @default("Belum Dihubungi")
+  priority              Priority          @default(MEDIUM)
+  source                String?
+  
+  picId                 String?
+  pic                   User?             @relation("PicAffiliates", fields: [picId], references: [id], onDelete: SetNull)
+  campaignId            String?
+  campaign              Campaign?         @relation("CampaignAffiliates", fields: [campaignId], references: [id], onDelete: SetNull)
+  
+  notes                 Note[]
+  tags                  Tag[]
+  activities            Activity[]
+  statusHistory         StatusHistory[]
+  contactHistory        ContactHistory[]
+  deals                 Deal[]
+  tasks                 Task[]
+  reminders             Reminder[]
+  attachments           FileAttachment[]
+  
+  lastContactDate       DateTime?
+  lastFollowUpDate      DateTime?
+
+  blacklistDate         DateTime?
+  blacklistReason       String?
+  blacklistNotes        String?
+
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  deletedAt             DateTime?
+  deletedBy             String?
+
+  @@index([status])
+  @@index([picId])
+  @@index([campaignId])
+  @@index([username])
+  @@index([waContact])
+  @@index([followersCount])
+  @@index([gmvCount])
+  @@index([createdAt])
+  @@index([lastContactDate])
+  @@index([lastFollowUpDate])
+}
+
+model Campaign {
+  id            String         @id @default(uuid())
+  name          String         @unique
+  status        CampaignStatus @default(UPCOMING)
+  budget        Float          @default(0.0)
+  targetCreator Int            @default(0)
+  targetVideo   Int            @default(0)
+  targetLive    Int            @default(0)
+  startDate     DateTime?
+  endDate       DateTime?
+  description   String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+  deletedBy     String?
+  
+  affiliates    Affiliate[]    @relation("CampaignAffiliates")
+  deals         Deal[]
+}
+
+model Deal {
+  id               String                 @id @default(uuid())
+  dealDate         DateTime               @default(now())
+  affiliateId      String
+  affiliate        Affiliate              @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  campaignId       String
+  campaign         Campaign               @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  nominal          Float                  @default(0.0)
+  product          String
+  picId            String?
+  pic              User?                  @relation("PicDeals", fields: [picId], references: [id], onDelete: SetNull)
+  statusCampaign   String                 @default("Not Started")
+  targetVideo      Int                    @default(0)
+  targetLive       Int                    @default(0)
+  deadline         DateTime?
+  completionRate   Float                  @default(0.0)
+  progressCampaign ProgressCampaignStatus @default(NOT_STARTED)
+  reminders        Reminder[]
+  
+  sampleSentDate      DateTime?
+  sampleReceivedDate  DateTime?
+  videoLink1          String?
+  videoLink2          String?
+  videoLink3          String?
+  videoLink4          String?
+  videoLink5          String?
+  uploadedVideoCount  Int                    @default(0)
+  sowStatus           String                 @default("In Progress")
+
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  deletedAt        DateTime?
+  deletedBy        String?
+
+  @@index([affiliateId])
+  @@index([campaignId])
+}
+
+model ChatTemplate {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  type        String   // introduction, follow-up, reminder, re-approach, deal, thank-you
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ContactHistory {
+  id          String    @id @default(uuid())
+  affiliateId String
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  picId       String
+  pic         User      @relation(fields: [picId], references: [id], onDelete: Cascade)
+  contactDate DateTime  @default(now())
+  channel     String    // WhatsApp, TikTok DM, Instagram DM, Email
+  templateId  String?
+  status      String    // Sent, Bounced, Responded
+  notes       String?
+  
+  createdAt   DateTime  @default(now())
+}
+
+model Note {
+  id          String    @id @default(uuid())
+  affiliateId String
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Tag {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  affiliates  Affiliate[]
+}
+
+model Activity {
+  id          String     @id @default(uuid())
+  affiliateId String?
+  affiliate   Affiliate? @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
+  userId      String?
+  user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String     // e.g., STATUS_CHANGE, ASSIGN_PIC, COMMENT_ADD
+  details     String     // e.g., "Changed status from 'Contacted WA' to 'Approved'"
+  createdAt   DateTime   @default(now())
+}
+
+model StatusHistory {
+  id          String    @id @default(uuid())
+  affiliateId String
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  oldStatus   String
+  newStatus   String
+  changedAt   DateTime  @default(now())
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  message     String
+  read        Boolean  @default(false)
+  type        String   // follow-up, campaign-deadline, system
+  createdAt   DateTime @default(now())
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  dueDate     DateTime
+  completed   Boolean   @default(false)
+  affiliateId String?
+  affiliate   Affiliate? @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
+  assignedToId String?
+  assignedTo   User?     @relation("AssignedTasks", fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdById  String?
+  createdBy    User?     @relation("CreatedTasks", fields: [createdById], references: [id], onDelete: SetNull)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ImportLog {
+  id         String   @id @default(uuid())
+  fileName   String
+  status     String   // SUCCESS, FAILED
+  rowCount   Int
+  errors     String?
+  createdAt  DateTime @default(now())
+}
+
+model ExportLog {
+  id         String   @id @default(uuid())
+  format     String   // XLSX, CSV
+  rowCount   Int
+  createdAt  DateTime @default(now())
+}
+
+model ReminderSchedule {
+  id          String   @id @default(uuid())
+  name        String
+  days        Int      // 3 (follow up), 7 (no response), 30 (re-approach)
+  active      Boolean  @default(true)
+  description String
+  createdAt   DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  userName   String?
+  createdAt  DateTime @default(now())
+  entity     String
+  entityId   String
+  action     String   // CREATE, UPDATE, DELETE, RESTORE, IMPORT, EXPORT, LOGIN, LOGOUT
+  oldValue   String?  // JSON text
+  newValue   String?  // JSON text
+  ipAddress  String?
+  browser    String?
+
+  @@index([entity])
+  @@index([entityId])
+  @@index([createdAt])
+}
+
+model Reminder {
+  id          String     @id @default(uuid())
+  affiliateId String?
+  affiliate   Affiliate? @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  dealId      String?
+  deal        Deal?      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  type        String     // FOLLOW_UP, NO_RESPONSE, RE_APPROACH, DEADLINE, NOT_PAID
+  dueDate     DateTime
+  completed   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([affiliateId])
+  @@index([type])
+  @@index([dueDate])
+}
+
+model FileAttachment {
+  id          String    @id @default(uuid())
+  affiliateId String
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  fileName    String
+  fileUrl     String
+  fileType    String    // SCREENSHOT, INVOICE, CONTRACT, TRANSFER_PROOF, PRODUCT_PHOTO, VIDEO_BRIEF
+  fileSize    Int
+  uploadedBy  String?   // User name or ID
+  createdAt   DateTime  @default(now())
+
+  @@index([affiliateId])
+}
