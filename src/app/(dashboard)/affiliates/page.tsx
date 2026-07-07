@@ -26,7 +26,8 @@ import {
   Copy,
   Phone,
   MessageCircle,
-  StickyNote
+  StickyNote,
+  Pencil
 } from 'lucide-react'
 
 // All progress statuses and their associated color schemes
@@ -367,6 +368,60 @@ export default function AffiliateListingPage() {
     } finally {
       setSavingField(false)
     }
+  }
+
+  const renderEditableMetric = (
+    item: Affiliate,
+    field: 'followers' | 'gmv',
+    valueClassName: string,
+    variant: 'table' | 'card' = 'table'
+  ) => {
+    const currentValue = field === 'followers' ? (item.followers || '0') : (item.gmv || '0')
+    const isEditing = editingCell?.id === item.id && editingCell.field === field
+
+    if (isEditing) {
+      return (
+        <input
+          type="text"
+          autoFocus
+          value={editValue}
+          disabled={savingField}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={() => {
+            if (editValue !== currentValue) {
+              handleInlineFieldSave(item.id, field, editValue)
+            } else {
+              setEditingCell(null)
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleInlineFieldSave(item.id, field, editValue)
+            if (e.key === 'Escape') setEditingCell(null)
+          }}
+          className={`${variant === 'table' ? 'w-24' : 'w-full'} bg-white dark:bg-zinc-900 border border-[#007AFF] rounded-lg px-2 py-0.5 text-[10px] font-bold text-[#1D1D1F] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#007AFF]`}
+        />
+      )
+    }
+
+    const baseClass =
+      variant === 'table'
+        ? 'bg-[#F5F5F7] dark:bg-zinc-800 border border-[#E5E5EA] dark:border-zinc-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-2xs'
+        : 'text-[10px] font-bold'
+
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setEditingCell({ id: item.id, field })
+          setEditValue(currentValue)
+        }}
+        title="Klik untuk edit"
+        className={`group inline-flex items-center gap-1 cursor-pointer hover:border-[#007AFF] transition-colors ${baseClass} ${valueClassName}`}
+      >
+        <span>{currentValue}</span>
+        <Pencil className="h-2.5 w-2.5 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" />
+      </button>
+    )
   }
 
   const handleCuratedToggle = async (id: string, current: boolean) => {
@@ -1137,8 +1192,8 @@ export default function AffiliateListingPage() {
                 <th className="py-4 px-4">Listing Date</th>
                 <th className="py-4 px-4">TikTok Creator</th>
                 <th className="py-4 px-4">Category Niche</th>
-                <th className="py-4 px-4">Followers</th>
-                <th className="py-4 px-4">GMV L30D</th>
+                <th className="py-4 px-4">Followers <span className="normal-case font-medium opacity-60">(klik edit)</span></th>
+                <th className="py-4 px-4">GMV L30D <span className="normal-case font-medium opacity-60">(klik edit)</span></th>
                 <th className="py-4 px-4">Kurasi</th>
                 <th className="py-4 px-4">AI Priority</th>
                 <th className="py-4 px-4">Campaign</th>
@@ -1256,72 +1311,10 @@ export default function AffiliateListingPage() {
                       </td>
                       <td className="py-4 px-4 text-[#6E6E73] dark:text-[#8E8E93]">{item.niche || 'Food & Beverages'}</td>
                       <td className="py-4 px-4">
-                        {editingCell?.id === item.id && editingCell.field === 'followers' ? (
-                          <input
-                            type="text"
-                            autoFocus
-                            value={editValue}
-                            disabled={savingField}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            onBlur={() => {
-                              if (editValue !== (item.followers || '0')) {
-                                handleInlineFieldSave(item.id, 'followers', editValue)
-                              } else {
-                                setEditingCell(null)
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleInlineFieldSave(item.id, 'followers', editValue)
-                              if (e.key === 'Escape') setEditingCell(null)
-                            }}
-                            className="w-20 bg-white dark:bg-zinc-900 border border-[#007AFF] rounded-lg px-2 py-0.5 text-[10px] font-bold text-[#1D1D1F] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#007AFF]"
-                          />
-                        ) : (
-                          <span
-                            onDoubleClick={() => {
-                              setEditingCell({ id: item.id, field: 'followers' })
-                              setEditValue(item.followers || '0')
-                            }}
-                            title="Double-click untuk edit"
-                            className="bg-[#F5F5F7] dark:bg-zinc-800 border border-[#E5E5EA] dark:border-zinc-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#1D1D1F] dark:text-white shadow-2xs cursor-pointer hover:border-[#007AFF] transition-colors"
-                          >
-                            {item.followers || '0'}
-                          </span>
-                        )}
+                        {renderEditableMetric(item, 'followers', 'text-[#1D1D1F] dark:text-white')}
                       </td>
                       <td className="py-4 px-4">
-                        {editingCell?.id === item.id && editingCell.field === 'gmv' ? (
-                          <input
-                            type="text"
-                            autoFocus
-                            value={editValue}
-                            disabled={savingField}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            onBlur={() => {
-                              if (editValue !== (item.gmv || '0')) {
-                                handleInlineFieldSave(item.id, 'gmv', editValue)
-                              } else {
-                                setEditingCell(null)
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleInlineFieldSave(item.id, 'gmv', editValue)
-                              if (e.key === 'Escape') setEditingCell(null)
-                            }}
-                            className="w-20 bg-white dark:bg-zinc-900 border border-[#007AFF] rounded-lg px-2 py-0.5 text-[10px] font-bold text-[#34C759] focus:outline-none focus:ring-1 focus:ring-[#007AFF]"
-                          />
-                        ) : (
-                          <span
-                            onDoubleClick={() => {
-                              setEditingCell({ id: item.id, field: 'gmv' })
-                              setEditValue(item.gmv || '0')
-                            }}
-                            title="Double-click untuk edit"
-                            className="bg-[#F5F5F7] dark:bg-zinc-800 border border-[#E5E5EA] dark:border-zinc-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#34C759] shadow-2xs cursor-pointer hover:border-[#007AFF] transition-colors"
-                          >
-                            {item.gmv || '0'}
-                          </span>
-                        )}
+                        {renderEditableMetric(item, 'gmv', 'text-[#34C759]')}
                       </td>
                       <td className="py-4 px-4">
                         <button
@@ -1582,12 +1575,12 @@ export default function AffiliateListingPage() {
 
                 <div className="grid grid-cols-3 gap-2 border-t border-zinc-100 dark:border-zinc-900 pt-2 text-[10px] text-zinc-450 dark:text-zinc-500">
                   <div>
-                    <span className="block font-medium">Followers</span>
-                    <span className="font-bold text-zinc-700 dark:text-zinc-300">{item.followers || '0'}</span>
+                    <span className="block font-medium mb-0.5">Followers</span>
+                    {renderEditableMetric(item, 'followers', 'text-zinc-700 dark:text-zinc-300', 'card')}
                   </div>
                   <div>
-                    <span className="block font-medium">GMV L30D</span>
-                    <span className="font-bold text-emerald-650 dark:text-emerald-400">{item.gmv || '0'}</span>
+                    <span className="block font-medium mb-0.5">GMV L30D</span>
+                    {renderEditableMetric(item, 'gmv', 'text-emerald-650 dark:text-emerald-400', 'card')}
                   </div>
                   <div>
                     <span className="block font-medium">Priority</span>

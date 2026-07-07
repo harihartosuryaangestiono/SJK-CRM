@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getSessionUser } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
+import { parseFollowers, parseGMV } from '@/lib/excel-utils'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -134,21 +135,13 @@ export async function PATCH(req: NextRequest, { params }: Props) {
     }
     if (followers !== undefined && followers !== current.followers) {
       updateData.followers = followers
-      const rawLower = String(followers).trim().toLowerCase()
-      let count = 0
-      if (rawLower.endsWith('rb') || rawLower.endsWith('k')) count = parseFloat(rawLower) * 1000
-      else if (rawLower.endsWith('jt') || rawLower.endsWith('m')) count = parseFloat(rawLower) * 1000000
-      else count = parseFloat(rawLower) || 0
-      updateData.followersCount = count
+      updateData.followersCount = parseFollowers(followers)
+      auditLogs.push(`followers updated to '${followers}'`)
     }
     if (gmv !== undefined && gmv !== current.gmv) {
       updateData.gmv = gmv
-      let count = 0
-      const rawLower = String(gmv).trim().toLowerCase()
-      if (rawLower.endsWith('rb') || rawLower.endsWith('k')) count = parseFloat(rawLower) * 1000
-      else if (rawLower.endsWith('jt') || rawLower.endsWith('m')) count = parseFloat(rawLower) * 1000000
-      else count = parseFloat(rawLower) || 0
-      updateData.gmvCount = count
+      updateData.gmvCount = parseGMV(gmv)
+      auditLogs.push(`GMV updated to '${gmv}'`)
     }
     if (lastContactDate !== undefined && lastContactDate !== (current.lastContactDate ? new Date(current.lastContactDate).toISOString() : null)) {
       updateData.lastContactDate = lastContactDate ? new Date(lastContactDate) : null
@@ -255,6 +248,10 @@ export async function PATCH(req: NextRequest, { params }: Props) {
     }
 
     // Perform database update
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ success: true, data: current })
+    }
+
     const updated = await prisma.affiliate.update({
       where: { id },
       data: updateData
