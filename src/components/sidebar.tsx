@@ -17,7 +17,7 @@ import {
   ChevronRight,
   LogOut,
   User as UserIcon,
-  LayoutGrid,
+  
   Trash2,
   ShieldAlert,
   TrendingUp,
@@ -92,8 +92,8 @@ export default function Sidebar() {
       <div>
         <div className="flex h-[56px] items-center justify-between px-3.5 border-b border-[#F2F2F7] dark:border-[#2C2C2E]">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="h-8 w-8 rounded-[10px] bg-[#007AFF] flex items-center justify-center shrink-0">
-              <LayoutGrid className="h-4 w-4 text-white stroke-[2]" />
+            <div className="h-8 w-8 rounded-[10px] overflow-hidden shrink-0">
+              <img src="/logo-sjk.svg" alt="SJ Kitchen" className="h-full w-full object-cover" />
             </div>
             {!isCollapsed && (
               <div className="flex flex-col truncate leading-tight">

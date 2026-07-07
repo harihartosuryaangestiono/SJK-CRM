@@ -43,6 +43,10 @@ export default function RootLayout({
             `,
           }}
         />
+        <link rel="icon" href="/logo-sjk.svg" />
+        <link rel="apple-touch-icon" href="/Logo SJK.png" />
+        <link rel="shortcut icon" href="/logo-sjk.svg" />
+        <meta name="theme-color" content="#FBF7F2" />
       </head>
       <body className="min-h-full flex flex-col">
         <Providers>

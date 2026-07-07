@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Lock, Mail, Eye, EyeOff, LayoutGrid } from 'lucide-react'
+import { Lock, Mail, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -50,8 +50,8 @@ export default function LoginPage() {
       <div className="w-full max-w-[380px] z-10">
         {/* Brand */}
         <div className="flex flex-col items-center mb-8 text-center">
-          <div className="h-14 w-14 rounded-[18px] bg-[#007AFF] flex items-center justify-center shadow-[0_8px_24px_rgba(0,122,255,0.28)] mb-5">
-            <LayoutGrid className="h-7 w-7 text-white stroke-[2]" />
+          <div className="h-14 w-14 rounded-[18px] overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.12)] mb-5">
+            <img src="/logo-sjk.svg" alt="SJ Kitchen" className="h-full w-full object-cover" />
           </div>
           <h1 className="text-[22px] font-bold tracking-tight text-[#1D1D1F]">SJ Kitchen</h1>
           <p className="text-[13px] text-[#6E6E73] mt-1 font-medium">Affiliate Marketing CRM</p>
