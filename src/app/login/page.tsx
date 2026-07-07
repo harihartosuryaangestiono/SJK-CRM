@@ -131,15 +131,15 @@ export default function LoginPage() {
             </p>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { label: 'Admin', email: 'admin@sjkitchen.com' },
-                { label: 'Manager', email: 'manager@sjkitchen.com' },
+                { label: 'Dinda', email: 'dindavictoria1509@gmail.com' },
+                { label: 'Intan', email: 'intan@sjkitchen.com' },
                 { label: 'Staff', email: 'staff@sjkitchen.com' },
               ].map(acc => (
                 <button
                   key={acc.email}
                   type="button"
                   onClick={() => handleQuickLogin(acc.email)}
-                  className="py-2 text-center bg-[#F5F5F7] hover:bg-[#E8E8ED] active:scale-[0.97] border border-[#E5E5EA] rounded-[10px] text-[11px] font-semibold text-[#1D1D1F] transition-all cursor-pointer"
+                  className="py-2 text-center bg-[#F5F5F7] hover:bg-[#E8EED] active:scale-[0.97] border border-[#E5E5EA] rounded-[10px] text-[11px] font-semibold text-[#1D1D1F] transition-all cursor-pointer"
                 >
                   {acc.label}
                 </button>

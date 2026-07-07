@@ -3,6 +3,15 @@ import { createClient } from '@/utils/supabase/server'
 import prisma from '@/lib/prisma'
 import { comparePassword, destroySession, createSession } from '@/lib/auth'
 import { logAudit } from '@/lib/audit'
+import { Role } from '@prisma/client'
+
+const ROLE_BY_EMAIL: Record<string, Role> = {
+  'dindavictoria1509@gmail.com': Role.ADMIN,
+  'admin@sjkitchen.com': Role.ADMIN,
+  'intan@sjkitchen.com': Role.MANAGER,
+  'manager@sjkitchen.com': Role.MANAGER,
+  'staff@sjkitchen.com': Role.STAFF,
+}
 
 // GET active session
 export async function GET() {
@@ -44,11 +53,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Email and password are required' }, { status: 400 })
     }
 
+    const normalizedEmail = String(email).trim().toLowerCase()
+    const requestedRole = ROLE_BY_EMAIL[normalizedEmail]
+
     const supabase = await createClient()
 
     // 1. Try signing in with Supabase Auth
     let { data, error } = await supabase.auth.signInWithPassword({
-      email,
+      email: normalizedEmail,
       password
     })
 
@@ -57,13 +69,13 @@ export async function POST(req: NextRequest) {
       await prisma.$executeRaw`
         UPDATE auth.users 
         SET email_confirmed_at = NOW() 
-        WHERE email = ${email}
+        WHERE email = ${normalizedEmail}
       `.catch((err) => {
         console.error('Email auto-confirm failed:', err)
       })
 
       const retryResult = await supabase.auth.signInWithPassword({
-        email,
+        email: normalizedEmail,
         password
       })
       data = retryResult.data
@@ -73,7 +85,7 @@ export async function POST(req: NextRequest) {
     // 2. Fallback check against local public.User table (for seeded accounts)
     if (error && (error.status === 400 || error.message.includes('Invalid login credentials'))) {
       const dbUser = await prisma.user.findUnique({
-        where: { email }
+        where: { email: normalizedEmail }
       })
 
       if (dbUser && dbUser.passwordHash) {
@@ -82,7 +94,7 @@ export async function POST(req: NextRequest) {
         if (passwordMatches) {
           // Automatic signup in Supabase Auth using these credentials
           const signUpResult = await supabase.auth.signUp({
-            email,
+            email: normalizedEmail,
             password,
             options: {
               data: {
@@ -96,14 +108,14 @@ export async function POST(req: NextRequest) {
             await prisma.$executeRaw`
               UPDATE auth.users 
               SET email_confirmed_at = NOW() 
-              WHERE email = ${email}
+              WHERE email = ${normalizedEmail}
             `.catch((err) => {
               console.error('Email auto-confirm failed:', err)
             })
 
             // Sign in again now that account is created
             const signInResult = await supabase.auth.signInWithPassword({
-              email,
+              email: normalizedEmail,
               password
             })
             data = signInResult.data
@@ -119,57 +131,68 @@ export async function POST(req: NextRequest) {
 
     // 3. Sync local public.User ID to match Supabase Auth user ID if not already matched
     let dbUser = await prisma.user.findUnique({
-      where: { email: data.user.email }
+      where: { email: normalizedEmail }
     })
+
+    const resolvedRole = requestedRole || dbUser?.role || Role.STAFF
 
     if (!dbUser) {
       dbUser = await prisma.user.create({
         data: {
           id: data.user.id, // Match UUID
-          email: data.user.email!,
+          email: normalizedEmail,
           name: data.user.user_metadata?.name || 'Affiliate User',
           passwordHash: '', // Password managed by Supabase
-          role: 'STAFF'
+          role: resolvedRole
         }
       })
-    } else if (dbUser.id !== data.user.id) {
-      const oldId = dbUser.id
-      const newId = data.user.id
-      const role = dbUser.role
-      const name = dbUser.name
-      const tempEmail = `temp-${Date.now()}@sjkitchen.com`
-      
-      // Update all foreign keys pointing to oldId before recreating user row to bypass constraints
-      await prisma.$transaction([
-        // 1. Free up unique email constraint on oldId
-        prisma.user.update({ where: { id: oldId }, data: { email: tempEmail } }),
-        // 2. Create the new user with newId so it exists for foreign key checks
-        prisma.user.create({
-          data: {
-            id: newId,
-            email: data.user.email!,
-            name,
-            passwordHash: '',
-            role
-          }
-        }),
-        // 3. Update all referencing tables
-        prisma.session.updateMany({ where: { userId: oldId }, data: { userId: newId } }),
-        prisma.affiliate.updateMany({ where: { picId: oldId }, data: { picId: newId } }),
-        prisma.deal.updateMany({ where: { picId: oldId }, data: { picId: newId } }),
-        prisma.contactHistory.updateMany({ where: { picId: oldId }, data: { picId: newId } }),
-        prisma.activity.updateMany({ where: { userId: oldId }, data: { userId: newId } }),
-        prisma.notification.updateMany({ where: { userId: oldId }, data: { userId: newId } }),
-        prisma.task.updateMany({ where: { assignedToId: oldId }, data: { assignedToId: newId } }),
-        prisma.task.updateMany({ where: { createdById: oldId }, data: { createdById: newId } }),
-        // 4. Safely delete the old temporary user
-        prisma.user.delete({ where: { id: oldId } })
-      ])
+    } else {
+      if (dbUser.id !== data.user.id) {
+        const oldId = dbUser.id
+        const newId = data.user.id
+        const role = dbUser.role
+        const name = dbUser.name
+        const tempEmail = `temp-${Date.now()}@sjkitchen.com`
+        
+        // Update all foreign keys pointing to oldId before recreating user row to bypass constraints
+        await prisma.$transaction([
+          // 1. Free up unique email constraint on oldId
+          prisma.user.update({ where: { id: oldId }, data: { email: tempEmail } }),
+          // 2. Create the new user with newId so it exists for foreign key checks
+          prisma.user.create({
+            data: {
+              id: newId,
+              email: normalizedEmail,
+              name,
+              passwordHash: '',
+              role
+            }
+          }),
+          // 3. Update all referencing tables
+          prisma.session.updateMany({ where: { userId: oldId }, data: { userId: newId } }),
+          prisma.affiliate.updateMany({ where: { picId: oldId }, data: { picId: newId } }),
+          prisma.deal.updateMany({ where: { picId: oldId }, data: { picId: newId } }),
+          prisma.contactHistory.updateMany({ where: { picId: oldId }, data: { picId: newId } }),
+          prisma.activity.updateMany({ where: { userId: oldId }, data: { userId: newId } }),
+          prisma.notification.updateMany({ where: { userId: oldId }, data: { userId: newId } }),
+          prisma.task.updateMany({ where: { assignedToId: oldId }, data: { assignedToId: newId } }),
+          prisma.task.updateMany({ where: { createdById: oldId }, data: { createdById: newId } }),
+          // 4. Safely delete the old temporary user
+          prisma.user.delete({ where: { id: oldId } })
+        ])
 
-      // Re-fetch sync data to guarantee type compliance
-      dbUser = await prisma.user.findUnique({
-        where: { id: newId }
-      }) || dbUser
+        // Re-fetch sync data to guarantee type compliance
+        dbUser = await prisma.user.findUnique({
+          where: { id: newId }
+        }) || dbUser
+      }
+
+      if (dbUser.role !== resolvedRole) {
+        dbUser = await prisma.user.update({
+          where: { id: dbUser.id },
+          data: { role: resolvedRole }
+        })
+      }
     }
 
     await createSession(dbUser.id)
