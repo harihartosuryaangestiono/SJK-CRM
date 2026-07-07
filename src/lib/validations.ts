@@ -28,7 +28,7 @@ export const affiliateSchema = z.object({
   gmvCount: z.coerce.number().default(0.0),
   period: z.string().optional().nullable(),
   activation: z.string().optional().nullable(),
-  curate: z.string().optional().nullable(),
+  curated: z.boolean().optional(),
   contactConfirmation: z.string().optional().nullable(),
   affiliateConfirmation: z.string().optional().nullable(),
   remarks: z.string().optional().nullable(),

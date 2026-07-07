@@ -43,6 +43,8 @@ import {
   CartesianGrid
 } from 'recharts'
 import { toast } from 'sonner'
+import { AIInsightsPanel, AIWorkflowPanel } from '@/components/ai-dashboard-widgets'
+import { AIAnalyticsPanel, AIAnomalyPanel, AIPredictionsPanel } from '@/components/ai-advanced-widgets'
 
 interface DashboardData {
   success: boolean
@@ -276,6 +278,19 @@ export default function DashboardPage() {
             </div>
           </motion.div>
         ))}
+      </div>
+
+      {/* AI Insights & Workflow */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <AIInsightsPanel />
+        <AIWorkflowPanel />
+      </div>
+
+      {/* AI Analytics, Anomalies & Predictions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <AIAnalyticsPanel />
+        <AIAnomalyPanel />
+        <AIPredictionsPanel />
       </div>
 
       {/* SOW & Action Items Workflow (11. Dashboard Update) */}

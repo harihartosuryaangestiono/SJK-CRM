@@ -38,23 +38,24 @@ import {
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
+import AffiliateHealthScore from '@/components/affiliate-health-score'
 
 const STATUS_OPTIONS = [
-  'Belum Dihubungi', 'Sudah Dihubungi', 'Menunggu Balasan',
+  'Belum Dihubungi', 'Sudah Dihubungi',
   'Follow Up 1', 'Follow Up 2', 'No Response', 'Negotiation',
-  'Deal', 'Reject', 'Blacklist'
+  'Deal', 'Reject', 'Tidak Relevan', 'Blacklist'
 ]
 
 const STATUS_COLORS: Record<string, string> = {
   'Belum Dihubungi': 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700',
   'Sudah Dihubungi': 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/30',
-  'Menunggu Balasan': 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/30',
   'Follow Up 1': 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900/30',
   'Follow Up 2': 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900/30',
   'No Response': 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-950/40 dark:text-rose-450 dark:border-rose-900/30',
   'Negotiation': 'bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-900/30',
   'Deal': 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30',
   'Reject': 'bg-red-50 text-red-700 border-red-100 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/30',
+  'Tidak Relevan': 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-900/30',
   'Blacklist': 'bg-zinc-950/20 text-zinc-950 border-zinc-900/10 dark:bg-zinc-900 dark:text-red-400 dark:border-red-950'
 }
 
@@ -628,6 +629,7 @@ export default function AffiliateProfilePage() {
             <div className="space-y-6">
               <Card className="bg-white dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-[#38383A] text-zinc-650 dark:text-zinc-300 rounded-[24px] shadow-2xs">
                 <CardContent className="p-5 space-y-4">
+                  <AffiliateHealthScore affiliateId={profile.id} />
                   <div className="flex items-center justify-between border-b border-[#E5E5EA] dark:border-[#38383A]/60 pb-3">
                     <span className="text-[10px] text-[#6E6E73] dark:text-[#8E8E93] font-bold uppercase">AI Priority</span>
                     <div className="flex flex-col items-end">

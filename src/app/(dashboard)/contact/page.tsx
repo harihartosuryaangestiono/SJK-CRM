@@ -17,7 +17,9 @@ import {
   X,
   CheckCircle,
   AlertCircle,
-  Send
+  Send,
+  Sparkles,
+  Loader2
 } from 'lucide-react'
 
 interface Affiliate {
@@ -45,13 +47,13 @@ interface ChatTemplate {
 const STATUS_COLORS: Record<string, string> = {
   'Belum Dihubungi': 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700',
   'Sudah Dihubungi': 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/30',
-  'Menunggu Balasan': 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/30',
   'Follow Up 1': 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900/30',
   'Follow Up 2': 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900/30',
   'No Response': 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-950/40 dark:text-rose-450 dark:border-rose-900/30',
   'Negotiation': 'bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-900/30',
   'Deal': 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30',
   'Reject': 'bg-red-50 text-red-700 border-red-100 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/30',
+  'Tidak Relevan': 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-900/30',
   'Blacklist': 'bg-zinc-950/20 text-zinc-950 border-zinc-900/10 dark:bg-zinc-900 dark:text-red-400 dark:border-red-950'
 }
 
@@ -73,6 +75,7 @@ export default function ContactPage() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [pendingContactType, setPendingContactType] = useState<'whatsapp' | 'tiktok' | null>(null)
   const [submittingResponse, setSubmittingResponse] = useState(false)
+  const [aiDrafting, setAiDrafting] = useState(false)
 
   // Queue tracking — IDs contacted in this session
   const [contactedIds, setContactedIds] = useState<string[]>([])
@@ -116,6 +119,37 @@ export default function ContactPage() {
       setPersonalizedMessage('')
     }
   }, [selectedAffiliate, selectedTemplate])
+
+  const handleAiDraft = async () => {
+    if (!selectedAffiliate) {
+      toast.error('Pilih creator terlebih dahulu')
+      return
+    }
+    setAiDrafting(true)
+    try {
+      const res = await fetch('/api/copilot/draft-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          affiliateId: selectedAffiliate.id,
+          messageType: selectedTemplate?.type || 'introduction',
+          channel: 'WhatsApp',
+          templateContent: selectedTemplate?.content,
+        }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        setPersonalizedMessage(json.message)
+        toast.success(json.provider === 'gemini' ? 'Pesan AI berhasil dibuat' : 'Pesan dari template')
+      } else {
+        toast.error(json.message || 'Gagal membuat draft')
+      }
+    } catch {
+      toast.error('Koneksi gagal')
+    } finally {
+      setAiDrafting(false)
+    }
+  }
 
   const copyText = async (text: string, type: 'text' | 'username' | 'wa') => {
     try {
@@ -462,8 +496,19 @@ export default function ContactPage() {
           <div className="bg-white dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-[#38383A] rounded-[20px] p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-[10px] font-bold text-[#6E6E73] dark:text-[#8E8E93] uppercase tracking-wider">3. Preview & Edit Pesan</h3>
-              <div className="flex items-center gap-1 bg-[#F5F5F7] dark:bg-[#1E1E1E] border border-[#E5E5EA] dark:border-[#38383A] text-[#6E6E73] px-2 py-0.5 rounded-full text-[10px] font-semibold">
-                [Username] [Deadline]
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={!selectedAffiliate || aiDrafting}
+                  onClick={handleAiDraft}
+                  className="flex items-center gap-1.5 px-2.5 py-1 bg-[#007AFF]/10 hover:bg-[#007AFF]/20 border border-[#007AFF]/20 text-[#007AFF] rounded-full text-[10px] font-bold transition-all cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  {aiDrafting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  AI Draft
+                </button>
+                <div className="flex items-center gap-1 bg-[#F5F5F7] dark:bg-[#1E1E1E] border border-[#E5E5EA] dark:border-[#38383A] text-[#6E6E73] px-2 py-0.5 rounded-full text-[10px] font-semibold">
+                  [Username] [Deadline]
+                </div>
               </div>
             </div>
             <textarea

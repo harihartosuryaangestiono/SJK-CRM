@@ -106,12 +106,14 @@ export function parseExcelRowToAffiliate(row: any) {
   const gmvCount = parseGMV(rawGmv)
   const period = row['Period'] ? String(row['Period']).trim() : null
   const activation = row['Activation'] ? String(row['Activation']).trim() : null
+  const rawCurate = row['Curate'] || row['Kurasi'] ? String(row['Curate'] || row['Kurasi']).trim() : null
   const contactConfirmation = row['Contact Confirmation'] ? String(row['Contact Confirmation']).trim() : null
   const affiliateConfirmation = row['Affiliate Confirmation'] ? String(row['Affiliate Confirmation']).trim() : null
   const remarks = row['Remarks'] ? String(row['Remarks']).trim() : null
 
   // Map Affiliate Confirmation to our Kanban CRM status
   // Common values: 'Approved', 'Reject', 'Not Response', 'Pending'
+  // Legacy 'Menunggu Balasan' maps to 'Sudah Dihubungi'
   let crmStatus = 'Belum Dihubungi'
   if (contactConfirmation) {
     if (contactConfirmation.toLowerCase().includes('contacted wa')) {
@@ -128,11 +130,20 @@ export function parseExcelRowToAffiliate(row: any) {
     } else if (confirmationLower.includes('reject')) {
       crmStatus = 'Reject'
     } else if (confirmationLower.includes('not response') || confirmationLower.includes('no response') || confirmationLower.includes('ghosting')) {
-      crmStatus = 'Menunggu Balasan'
+      crmStatus = 'Sudah Dihubungi'
     } else if (confirmationLower.includes('pending')) {
       crmStatus = 'Belum Dihubungi'
     }
   }
+
+  const rawStatus = row['Status'] ? String(row['Status']).trim() : null
+  if (rawStatus) {
+    crmStatus = rawStatus === 'Menunggu Balasan' ? 'Sudah Dihubungi' : rawStatus
+  }
+
+  const curated = rawCurate
+    ? ['sudah', 'yes', 'true', '1', 'sudah dikurasi', 'sudahdikurasi'].includes(rawCurate.toLowerCase())
+    : false
 
   // Set priority based on GMV and followers
   let priority: Priority = Priority.MEDIUM
@@ -155,7 +166,7 @@ export function parseExcelRowToAffiliate(row: any) {
     gmvCount,
     period,
     activation,
-    curate: null,
+    curated,
     contactConfirmation,
     affiliateConfirmation,
     remarks,

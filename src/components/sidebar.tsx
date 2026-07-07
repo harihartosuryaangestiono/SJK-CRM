@@ -21,7 +21,8 @@ import {
   Trash2,
   ShieldAlert,
   TrendingUp,
-  ClipboardList
+  ClipboardList,
+  Sparkles
 } from 'lucide-react'
 import { useSidebar } from '@/components/sidebar-context'
 
@@ -34,6 +35,7 @@ const NAV_GROUPS = [
       { label: 'Dashboard', icon: LayoutDashboard, href: '/' },
       { label: 'Affiliate Listing', icon: Database, href: '/affiliates' },
       { label: 'Contact Hub', icon: MessageSquare, href: '/contact' },
+      { label: 'AI Copilot', icon: Sparkles, href: '/ai' },
       { label: 'Progress Monitor', icon: KanbanSquare, href: '/progress' },
     ]
   },

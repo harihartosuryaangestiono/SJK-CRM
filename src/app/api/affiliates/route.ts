@@ -217,6 +217,36 @@ export async function PATCH(req: NextRequest) {
       const campaign = value ? await prisma.campaign.findUnique({ where: { id: value }, select: { name: true } }) : null
       activityDetails = `Moved to campaign ${campaign ? campaign.name : 'No Campaign'}`
       logAction = 'BULK_MOVE_CAMPAIGN'
+    } else if (action === 'update-field') {
+      // Inline edit: value = { field: 'followers'|'gmv'|'curated', newValue: string|boolean }
+      const { field, newValue } = value || {}
+      if (field === 'followers') {
+        updateData.followers = newValue
+        const rawLower = String(newValue).trim().toLowerCase()
+        let count = 0
+        if (rawLower.endsWith('rb') || rawLower.endsWith('k')) count = parseFloat(rawLower) * 1000
+        else if (rawLower.endsWith('jt') || rawLower.endsWith('m')) count = parseFloat(rawLower) * 1000000
+        else count = parseFloat(rawLower) || 0
+        updateData.followersCount = count
+        activityDetails = `Updated followers to '${newValue}'`
+        logAction = 'INLINE_UPDATE'
+      } else if (field === 'gmv') {
+        updateData.gmv = newValue
+        const rawLower = String(newValue).trim().toLowerCase()
+        let count = 0
+        if (rawLower.endsWith('rb') || rawLower.endsWith('k')) count = parseFloat(rawLower) * 1000
+        else if (rawLower.endsWith('jt') || rawLower.endsWith('m')) count = parseFloat(rawLower) * 1000000
+        else count = parseFloat(rawLower) || 0
+        updateData.gmvCount = count
+        activityDetails = `Updated GMV to '${newValue}'`
+        logAction = 'INLINE_UPDATE'
+      } else if (field === 'curated') {
+        updateData.curated = !!newValue
+        activityDetails = `Kurasi: ${newValue ? 'Sudah Dikurasi' : 'Belum Dikurasi'}`
+        logAction = 'INLINE_UPDATE'
+      } else {
+        return NextResponse.json({ message: 'Invalid field for inline edit' }, { status: 400 })
+      }
     } else {
       return NextResponse.json({ message: 'Invalid action parameter' }, { status: 400 })
     }

@@ -31,21 +31,21 @@ import {
 
 // All progress statuses and their associated color schemes
 const STATUS_OPTIONS = [
-  'Belum Dihubungi', 'Sudah Dihubungi', 'Menunggu Balasan',
+  'Belum Dihubungi', 'Sudah Dihubungi',
   'Follow Up 1', 'Follow Up 2', 'No Response', 'Negotiation',
-  'Deal', 'Reject', 'Blacklist'
+  'Deal', 'Reject', 'Tidak Relevan', 'Blacklist'
 ]
 
 const STATUS_COLORS: Record<string, string> = {
   'Belum Dihubungi': 'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700',
   'Sudah Dihubungi': 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/30',
-  'Menunggu Balasan': 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/30',
   'Follow Up 1': 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900/30',
   'Follow Up 2': 'bg-sky-50 text-sky-700 border-sky-100 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900/30',
   'No Response': 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-950/40 dark:text-rose-450 dark:border-rose-900/30',
   'Negotiation': 'bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-950/40 dark:text-purple-400 dark:border-purple-900/30',
   'Deal': 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30',
   'Reject': 'bg-red-50 text-red-700 border-red-100 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/30',
+  'Tidak Relevan': 'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-900/30',
   'Blacklist': 'bg-zinc-950/20 text-zinc-950 border-zinc-900/10 dark:bg-zinc-900 dark:text-red-400 dark:border-red-950'
 }
 
@@ -81,7 +81,7 @@ interface Affiliate {
   gmvCount: number
   period: string | null
   activation: string | null
-  curate: string | null
+  curated: boolean
   contactConfirmation: string | null
   affiliateConfirmation: string | null
   remarks: string | null
@@ -128,6 +128,9 @@ export default function AffiliateListingPage() {
   const [inlineNoteAffiliateId, setInlineNoteAffiliateId] = useState<string | null>(null)
   const [inlineNoteText, setInlineNoteText] = useState('')
   const [savingNote, setSavingNote] = useState(false)
+  const [editingCell, setEditingCell] = useState<{ id: string; field: 'followers' | 'gmv' } | null>(null)
+  const [editValue, setEditValue] = useState('')
+  const [savingField, setSavingField] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Manual Form State
@@ -342,6 +345,48 @@ export default function AffiliateListingPage() {
     }
   }
 
+  const handleInlineFieldSave = async (id: string, field: 'followers' | 'gmv', value: string) => {
+    try {
+      setSavingField(true)
+      const res = await fetch(`/api/affiliates/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value })
+      })
+      if (res.ok) {
+        toast.success(`${field === 'followers' ? 'Followers' : 'GMV'} berhasil diperbarui`)
+        setEditingCell(null)
+        setEditValue('')
+        fetchAffiliates()
+      } else {
+        const data = await res.json()
+        toast.error(data.message || 'Gagal memperbarui data')
+      }
+    } catch (e) {
+      toast.error('Terjadi kesalahan koneksi.')
+    } finally {
+      setSavingField(false)
+    }
+  }
+
+  const handleCuratedToggle = async (id: string, current: boolean) => {
+    try {
+      const res = await fetch(`/api/affiliates/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ curated: !current })
+      })
+      if (res.ok) {
+        toast.success(!current ? 'Ditandai Sudah Dikurasi' : 'Ditandai Belum Dikurasi')
+        fetchAffiliates()
+      } else {
+        toast.error('Gagal memperbarui status kurasi')
+      }
+    } catch (e) {
+      toast.error('Terjadi kesalahan koneksi.')
+    }
+  }
+
   const handleInlinePicChange = async (id: string, picId: string) => {
     try {
       const res = await fetch(`/api/affiliates/${id}`, {
@@ -477,13 +522,21 @@ export default function AffiliateListingPage() {
             gmv: String(getVal(['gmvl30dall', 'gmvl30d', 'gmv']) || ''),
             period: getVal(['period', 'periode']) || null,
             activation: getVal(['activation', 'aktivasi']) || null,
-            curate: getVal(['curate', 'kurasi']) || null,
+            curated: (() => {
+              const val = getVal(['curate', 'kurasi'])
+              if (!val) return false
+              const lower = String(val).toLowerCase().trim()
+              return ['sudah', 'yes', 'true', '1', 'sudah dikurasi', 'sudahdikurasi'].includes(lower)
+            })(),
             contactConfirmation: getVal(['contactconfirmation', 'konfirmasikontak']) || null,
             affiliateConfirmation: getVal(['affiliateconfirmation', 'konfirmasiaffiliate']) || null,
             remarks: getVal(['remarks', 'catatan', 'keterangan']) || null,
             email: getVal(['email', 'surel']) || null,
             instagram: getVal(['instagram', 'ig']) || null,
-            status: getVal(['status', 'tahap']) || 'Belum Dihubungi'
+            status: (() => {
+              const s = getVal(['status', 'tahap']) || 'Belum Dihubungi'
+              return s === 'Menunggu Balasan' ? 'Sudah Dihubungi' : s
+            })()
           }
         }).filter(r => r.username && r.username !== 'None' && r.username !== 'undefined' && r.username !== '')
 
@@ -1086,6 +1139,7 @@ export default function AffiliateListingPage() {
                 <th className="py-4 px-4">Category Niche</th>
                 <th className="py-4 px-4">Followers</th>
                 <th className="py-4 px-4">GMV L30D</th>
+                <th className="py-4 px-4">Kurasi</th>
                 <th className="py-4 px-4">AI Priority</th>
                 <th className="py-4 px-4">Campaign</th>
                 <th className="py-4 px-4">Status</th>
@@ -1103,6 +1157,7 @@ export default function AffiliateListingPage() {
                     <td className="py-4 px-4"><div className="h-3.5 w-24 bg-zinc-150 dark:bg-zinc-800 rounded" /></td>
                     <td className="py-4 px-4"><div className="h-3.5 w-14 bg-zinc-150 dark:bg-zinc-800 rounded" /></td>
                     <td className="py-4 px-4"><div className="h-3.5 w-14 bg-zinc-150 dark:bg-zinc-800 rounded" /></td>
+                    <td className="py-4 px-4"><div className="h-3.5 w-12 bg-zinc-150 dark:bg-zinc-800 rounded" /></td>
                     <td className="py-4 px-4"><div className="h-3.5 w-16 bg-zinc-150 dark:bg-zinc-800 rounded" /></td>
                     <td className="py-4 px-4"><div className="h-3.5 w-20 bg-zinc-150 dark:bg-zinc-800 rounded" /></td>
                     <td className="py-4 px-4"><div className="h-5 w-24 bg-zinc-150 dark:bg-zinc-800 rounded-full" /></td>
@@ -1112,7 +1167,7 @@ export default function AffiliateListingPage() {
                 ))
               ) : affiliates.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="py-16 text-center select-none">
+                  <td colSpan={12} className="py-16 text-center select-none">
                     <div className="max-w-[280px] mx-auto space-y-4">
                       <div className="h-12 w-12 rounded-full bg-[#F5F5F7] dark:bg-zinc-800 border border-[#E5E5EA] dark:border-[#38383A] flex items-center justify-center mx-auto text-[#6E6E73] dark:text-[#8E8E93]">
                         <AlertCircle className="h-5 w-5" />
@@ -1201,14 +1256,84 @@ export default function AffiliateListingPage() {
                       </td>
                       <td className="py-4 px-4 text-[#6E6E73] dark:text-[#8E8E93]">{item.niche || 'Food & Beverages'}</td>
                       <td className="py-4 px-4">
-                        <span className="bg-[#F5F5F7] dark:bg-zinc-800 border border-[#E5E5EA] dark:border-zinc-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#1D1D1F] dark:text-white shadow-2xs">
-                          {item.followers || '0'}
-                        </span>
+                        {editingCell?.id === item.id && editingCell.field === 'followers' ? (
+                          <input
+                            type="text"
+                            autoFocus
+                            value={editValue}
+                            disabled={savingField}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            onBlur={() => {
+                              if (editValue !== (item.followers || '0')) {
+                                handleInlineFieldSave(item.id, 'followers', editValue)
+                              } else {
+                                setEditingCell(null)
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleInlineFieldSave(item.id, 'followers', editValue)
+                              if (e.key === 'Escape') setEditingCell(null)
+                            }}
+                            className="w-20 bg-white dark:bg-zinc-900 border border-[#007AFF] rounded-lg px-2 py-0.5 text-[10px] font-bold text-[#1D1D1F] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#007AFF]"
+                          />
+                        ) : (
+                          <span
+                            onDoubleClick={() => {
+                              setEditingCell({ id: item.id, field: 'followers' })
+                              setEditValue(item.followers || '0')
+                            }}
+                            title="Double-click untuk edit"
+                            className="bg-[#F5F5F7] dark:bg-zinc-800 border border-[#E5E5EA] dark:border-zinc-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#1D1D1F] dark:text-white shadow-2xs cursor-pointer hover:border-[#007AFF] transition-colors"
+                          >
+                            {item.followers || '0'}
+                          </span>
+                        )}
                       </td>
                       <td className="py-4 px-4">
-                        <span className="bg-[#F5F5F7] dark:bg-zinc-800 border border-[#E5E5EA] dark:border-zinc-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#34C759] shadow-2xs">
-                          {item.gmv || '0'}
-                        </span>
+                        {editingCell?.id === item.id && editingCell.field === 'gmv' ? (
+                          <input
+                            type="text"
+                            autoFocus
+                            value={editValue}
+                            disabled={savingField}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            onBlur={() => {
+                              if (editValue !== (item.gmv || '0')) {
+                                handleInlineFieldSave(item.id, 'gmv', editValue)
+                              } else {
+                                setEditingCell(null)
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleInlineFieldSave(item.id, 'gmv', editValue)
+                              if (e.key === 'Escape') setEditingCell(null)
+                            }}
+                            className="w-20 bg-white dark:bg-zinc-900 border border-[#007AFF] rounded-lg px-2 py-0.5 text-[10px] font-bold text-[#34C759] focus:outline-none focus:ring-1 focus:ring-[#007AFF]"
+                          />
+                        ) : (
+                          <span
+                            onDoubleClick={() => {
+                              setEditingCell({ id: item.id, field: 'gmv' })
+                              setEditValue(item.gmv || '0')
+                            }}
+                            title="Double-click untuk edit"
+                            className="bg-[#F5F5F7] dark:bg-zinc-800 border border-[#E5E5EA] dark:border-zinc-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-[#34C759] shadow-2xs cursor-pointer hover:border-[#007AFF] transition-colors"
+                          >
+                            {item.gmv || '0'}
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-4 px-4">
+                        <button
+                          onClick={() => handleCuratedToggle(item.id, item.curated)}
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-all hover:opacity-80 shadow-2xs ${
+                            item.curated
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30'
+                              : 'bg-zinc-100 text-zinc-500 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700'
+                          }`}
+                        >
+                          {item.curated ? 'Sudah Dikurasi' : 'Belum'}
+                        </button>
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex flex-col gap-0.5">

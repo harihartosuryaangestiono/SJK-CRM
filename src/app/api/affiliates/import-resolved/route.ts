@@ -15,6 +15,7 @@ type ResolvedRow = {
     gmv?: any
     period?: any
     activation?: any
+    curated?: any
     curate?: any
     contactConfirmation?: any
     affiliateConfirmation?: any
@@ -24,6 +25,22 @@ type ResolvedRow = {
     status?: any
   }
   existingId?: string
+}
+
+function parseCurated(incoming: ResolvedRow['incoming']): boolean {
+  if (incoming.curated === true || incoming.curated === 'true') return true
+  const val = incoming.curate ?? incoming.curated
+  if (!val) return false
+  const lower = String(val).toLowerCase().trim()
+  return ['sudah', 'yes', 'true', '1', 'sudah dikurasi', 'sudahdikurasi'].includes(lower)
+}
+
+function normalizeStatus(status: any): string {
+  if (status === undefined || status === null) return 'Belum Dihubungi'
+  const s = String(status).trim()
+  if (!s) return 'Belum Dihubungi'
+  if (s === 'Menunggu Balasan') return 'Sudah Dihubungi'
+  return s
 }
 
 export async function POST(req: NextRequest) {
@@ -171,13 +188,13 @@ export async function POST(req: NextRequest) {
             gmvCount,
             period: ensureString(incoming.period),
             activation: ensureString(incoming.activation),
-            curate: ensureString(incoming.curate),
+            curated: parseCurated(incoming),
             contactConfirmation: ensureString(incoming.contactConfirmation),
             affiliateConfirmation: ensureString(incoming.affiliateConfirmation),
             remarks: ensureString(incoming.remarks),
             email: ensureString(incoming.email),
             instagram: ensureString(incoming.instagram),
-            status: ensureString(incoming.status) || 'Belum Dihubungi'
+            status: normalizeStatus(incoming.status)
           }
 
           await prisma.affiliate.update({
@@ -233,13 +250,13 @@ export async function POST(req: NextRequest) {
             gmvCount,
             period: ensureString(incoming.period),
             activation: ensureString(incoming.activation),
-            curate: ensureString(incoming.curate),
+            curated: parseCurated(incoming),
             contactConfirmation: ensureString(incoming.contactConfirmation),
             affiliateConfirmation: ensureString(incoming.affiliateConfirmation),
             remarks: ensureString(incoming.remarks),
             email: ensureString(incoming.email),
             instagram: ensureString(incoming.instagram),
-            status: ensureString(incoming.status) || 'Belum Dihubungi',
+            status: normalizeStatus(incoming.status),
             picId: user.id
           }
         })

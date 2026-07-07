@@ -72,7 +72,7 @@ export async function GET() {
       newThisMonth,
       newLastMonth,
       contacted,
-      waitingResponse,
+      tidakRelevan,
       followUp,
       negotiation,
       deals,
@@ -85,7 +85,7 @@ export async function GET() {
       prisma.affiliate.count({ where: { createdAt: { gte: thisMonthStart }, deletedAt: null } }),
       prisma.affiliate.count({ where: { createdAt: { gte: lastMonthStart, lt: thisMonthStart }, deletedAt: null } }),
       prisma.affiliate.count({ where: { status: { not: 'Belum Dihubungi' }, deletedAt: null } }),
-      prisma.affiliate.count({ where: { status: 'Menunggu Balasan', deletedAt: null } }),
+      prisma.affiliate.count({ where: { status: 'Tidak Relevan', deletedAt: null } }),
       prisma.affiliate.count({ where: { status: { in: ['Follow Up 1', 'Follow Up 2'] }, deletedAt: null } }),
       prisma.affiliate.count({ where: { status: 'Negotiation', deletedAt: null } }),
       prisma.affiliate.count({ where: { status: 'Deal', deletedAt: null } }),
@@ -188,7 +188,7 @@ export async function GET() {
 
     // ── 6. Conversion rates ───────────────────────────────────────────────────
     const conversionRate = contacted > 0 ? (deals / contacted) * 100 : 0
-    const responseRate = contacted > 0 ? ((contacted - waitingResponse) / contacted) * 100 : 0
+    const responseRate = contacted > 0 ? ((contacted - tidakRelevan) / contacted) * 100 : 0
     const monthlyGrowth = newLastMonth > 0 ? ((newThisMonth - newLastMonth) / newLastMonth) * 100 : 0
 
     // Repeat creator rate: affiliates with >1 deal / total affiliates with deals
@@ -307,7 +307,7 @@ export async function GET() {
         activeAffiliates,
         newThisMonth,
         contacted,
-        waitingResponse,
+        tidakRelevan,
         followUp,
         reapproach: reapproachCount,
         deals,
@@ -338,7 +338,7 @@ export async function GET() {
       funnel: [
         { name: 'Prospect', count: totalAffiliates, fill: '#374151' },
         { name: 'Contacted', count: contacted, fill: '#4b5563' },
-        { name: 'Waiting Response', count: waitingResponse, fill: '#eab308' },
+        { name: 'Tidak Relevan', count: tidakRelevan, fill: '#f97316' },
         { name: 'Follow Up', count: followUp, fill: '#3b82f6' },
         { name: 'Negotiation', count: negotiation, fill: '#a855f7' },
         { name: 'Deal', count: deals, fill: '#10b981' },

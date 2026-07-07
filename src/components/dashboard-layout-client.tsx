@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import Sidebar from '@/components/sidebar'
 import { useSidebar } from '@/components/sidebar-context'
 import CommandPalette from '@/components/command-palette'
-import { Bell, Search, Check, ShieldAlert, Clock, Home, MessageSquare, Sun, Moon } from 'lucide-react'
+import CopilotPanel from '@/components/copilot-panel'
+import { Bell, Search, Check, ShieldAlert, Clock, Home, MessageSquare, Sun, Moon, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { useRealtimeSync } from '@/hooks/useRealtimeSync'
@@ -17,9 +18,19 @@ type Notification = {
   createdAt: string
 }
 
+type AIAlert = {
+  id: string
+  title: string
+  message: string
+  priority: string
+  href?: string
+}
+
 export default function DashboardLayoutClient({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar()
   const [notifications, setNotifications] = useState<Notification[]>([])
+  const [aiAlerts, setAiAlerts] = useState<AIAlert[]>([])
+  const [inboxTab, setInboxTab] = useState<'inbox' | 'ai'>('inbox')
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
@@ -54,9 +65,23 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
     } catch (e) { console.error(e) }
   }
 
+  const fetchAiAlerts = async () => {
+    try {
+      const res = await fetch('/api/copilot/alerts')
+      const contentType = res.headers.get('content-type') || ''
+      if (!contentType.includes('application/json')) return
+      const json = await res.json()
+      if (json.success) setAiAlerts(json.data)
+    } catch (e) { console.error(e) }
+  }
+
   useEffect(() => {
     fetchNotifications()
-    const interval = setInterval(fetchNotifications, 15000)
+    fetchAiAlerts()
+    const interval = setInterval(() => {
+      fetchNotifications()
+      fetchAiAlerts()
+    }, 60000)
     return () => clearInterval(interval)
   }, [])
 
@@ -103,6 +128,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
   return (
     <div className="min-h-screen bg-[#F5F5F7] dark:bg-[#161617] text-[#1D1D1F] dark:text-white flex transition-colors duration-300">
       <CommandPalette />
+      <CopilotPanel />
       <Sidebar />
 
       <div
@@ -158,9 +184,9 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
                 className="relative h-8 w-8 flex items-center justify-center rounded-full border border-[#E5E5EA] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white hover:bg-[#F2F2F7] dark:hover:bg-[#3A3A3C] transition-all cursor-pointer"
               >
                 <Bell className="h-3.5 w-3.5" />
-                {notifications.length > 0 && (
+                {(notifications.length + aiAlerts.length) > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 bg-[#FF3B30] rounded-full flex items-center justify-center text-[8px] font-bold text-white">
-                    {notifications.length}
+                    {notifications.length + aiAlerts.length}
                   </span>
                 )}
               </button>
@@ -168,36 +194,81 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
               {showDropdown && (
                 <div className="absolute right-0 top-10 w-80 rounded-[18px] border border-[#E5E5EA] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] shadow-[0_8px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.5)] p-4 z-50 space-y-3 fade-scale">
                   <div className="flex items-center justify-between pb-2.5 border-b border-[#F2F2F7] dark:border-[#38383A]">
-                    <h4 className="text-[11.5px] font-bold text-[#1D1D1F] dark:text-white flex items-center gap-1.5">
-                      <Bell className="h-3.5 w-3.5 text-[#8E8E93]" /> Inbox
-                    </h4>
-                    {notifications.length > 0 && (
+                    <div className="flex bg-[#F2F2F7] dark:bg-[#1E1E1E] p-0.5 rounded-full">
+                      <button
+                        onClick={() => setInboxTab('inbox')}
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                          inboxTab === 'inbox' ? 'bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white shadow-2xs' : 'text-[#8E8E93]'
+                        }`}
+                      >
+                        Inbox {notifications.length > 0 && `(${notifications.length})`}
+                      </button>
+                      <button
+                        onClick={() => setInboxTab('ai')}
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                          inboxTab === 'ai' ? 'bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white shadow-2xs' : 'text-[#8E8E93]'
+                        }`}
+                      >
+                        <Sparkles className="h-2.5 w-2.5" /> AI {aiAlerts.length > 0 && `(${aiAlerts.length})`}
+                      </button>
+                    </div>
+                    {inboxTab === 'inbox' && notifications.length > 0 && (
                       <button onClick={handleMarkAllRead} className="text-[10px] text-[#007AFF] hover:underline font-semibold cursor-pointer">
                         Bersihkan
                       </button>
                     )}
+                    {inboxTab === 'ai' && (
+                      <Link href="/ai" onClick={() => setShowDropdown(false)} className="text-[10px] text-[#007AFF] hover:underline font-semibold">
+                        Workspace
+                      </Link>
+                    )}
                   </div>
-                  <div className="space-y-1.5 max-h-[240px] overflow-y-auto">
-                    {notifications.length === 0 ? (
+                  <div className="space-y-1.5 max-h-[280px] overflow-y-auto">
+                    {inboxTab === 'inbox' ? (
+                      notifications.length === 0 ? (
+                        <div className="text-center py-8">
+                          <Bell className="h-7 w-7 text-[#D1D1D6] mx-auto mb-2" />
+                          <p className="text-[11px] text-[#8E8E93]">Tidak ada notifikasi</p>
+                        </div>
+                      ) : (
+                        notifications.map(n => (
+                          <div key={n.id} className="group relative bg-[#F5F5F7] dark:bg-[#1E1E1E] rounded-xl p-3 flex items-start gap-2.5">
+                            <div className="flex-1 pr-5">
+                              <span className="text-[11px] font-semibold text-[#1D1D1F] dark:text-white block">{n.title}</span>
+                              <p className="text-[10px] text-[#6E6E73] dark:text-[#8E8E93] leading-snug mt-0.5">{n.message}</p>
+                            </div>
+                            <button
+                              onClick={() => handleMarkAsRead(n.id)}
+                              className="absolute right-2 top-2 p-1 rounded-full bg-white dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-[#38383A] text-[#8E8E93] hover:text-[#007AFF] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <Check className="h-2.5 w-2.5" />
+                            </button>
+                          </div>
+                        ))
+                      )
+                    ) : aiAlerts.length === 0 ? (
                       <div className="text-center py-8">
-                        <Bell className="h-7 w-7 text-[#D1D1D6] mx-auto mb-2" />
-                        <p className="text-[11px] text-[#8E8E93]">Tidak ada notifikasi</p>
+                        <Sparkles className="h-7 w-7 text-[#D1D1D6] mx-auto mb-2" />
+                        <p className="text-[11px] text-[#8E8E93]">Tidak ada AI alert</p>
                       </div>
                     ) : (
-                      notifications.map(n => (
-                        <div key={n.id} className="group relative bg-[#F5F5F7] dark:bg-[#1E1E1E] rounded-xl p-3 flex items-start gap-2.5">
-                          <div className="flex-1 pr-5">
-                            <span className="text-[11px] font-semibold text-[#1D1D1F] dark:text-white block">{n.title}</span>
-                            <p className="text-[10px] text-[#6E6E73] dark:text-[#8E8E93] leading-snug mt-0.5">{n.message}</p>
+                      aiAlerts.map(a => {
+                        const content = (
+                          <div className={`rounded-xl p-3 border ${
+                            a.priority === 'critical' ? 'border-[#FF3B30]/25 bg-[#FF3B30]/5' :
+                            a.priority === 'high' ? 'border-[#FF9F0A]/25 bg-[#FF9F0A]/5' :
+                            'border-[#007AFF]/20 bg-[#007AFF]/5'
+                          }`}>
+                            <span className="text-[11px] font-semibold text-[#1D1D1F] dark:text-white block">{a.title}</span>
+                            <p className="text-[10px] text-[#6E6E73] dark:text-[#8E8E93] leading-snug mt-0.5">{a.message}</p>
                           </div>
-                          <button
-                            onClick={() => handleMarkAsRead(n.id)}
-                            className="absolute right-2 top-2 p-1 rounded-full bg-white dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-[#38383A] text-[#8E8E93] hover:text-[#007AFF] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <Check className="h-2.5 w-2.5" />
-                          </button>
-                        </div>
-                      ))
+                        )
+                        return a.href ? (
+                          <Link key={a.id} href={a.href} onClick={() => setShowDropdown(false)}>{content}</Link>
+                        ) : (
+                          <div key={a.id}>{content}</div>
+                        )
+                      })
                     )}
                   </div>
                 </div>

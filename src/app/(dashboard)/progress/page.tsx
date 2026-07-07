@@ -17,7 +17,6 @@ import {
 const KANBAN_COLUMNS = [
   { id: 'Belum Dihubungi', label: 'Prospect', color: 'border-[#E5E5EA] dark:border-[#38383A] bg-[#F5F5F7] dark:bg-[#1E1E1E]/40 text-[#6E6E73] dark:text-[#8E8E93]' },
   { id: 'Sudah Dihubungi', label: 'Contacted', color: 'border-blue-100 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-950/10 text-[#007AFF]' },
-  { id: 'Menunggu Balasan', label: 'Waiting Response', color: 'border-amber-100 dark:border-amber-900/30 bg-amber-50/50 dark:bg-amber-950/10 text-[#FF9F0A]' },
   { id: 'Follow Up 1', label: 'Follow Up 1', color: 'border-sky-100 dark:border-sky-900/30 bg-sky-50/50 dark:bg-sky-950/10 text-sky-500' },
   { id: 'Follow Up 2', label: 'Follow Up 2', color: 'border-sky-100 dark:border-sky-900/30 bg-sky-50/50 dark:bg-sky-950/10 text-sky-500' },
   { id: 'Negotiation', label: 'Negotiation', color: 'border-purple-100 dark:border-purple-900/30 bg-purple-50/50 dark:bg-purple-950/10 text-purple-500' },
@@ -124,9 +123,6 @@ export default function ProgressPage() {
   const checkReminderAlert = (card: AffiliateCard) => {
     if (card.status === 'Sudah Dihubungi') {
       return { type: 'warning', text: '3 hari tanpa respon (Follow up!)' }
-    }
-    if (card.status === 'Menunggu Balasan') {
-      return { type: 'critical', text: '7 hari belum dibalas' }
     }
     if (card.status === 'Campaign Berjalan') {
       return { type: 'info', text: 'SOW mendekati deadline' }

@@ -62,9 +62,9 @@ export async function syncReminders() {
       const daysSinceUpdate = Math.floor((now.getTime() - aff.updatedAt.getTime()) / (1000 * 60 * 60 * 24))
       const picId = aff.picId
 
-      // Sudah Dihubungi / Menunggu Balasan -> Follow Up 1 (H+3)
+      // Sudah Dihubungi -> Follow Up 1 (H+3)
       if (
-        (aff.status === 'Sudah Dihubungi' || aff.status === 'Menunggu Balasan') &&
+        aff.status === 'Sudah Dihubungi' &&
         daysSinceUpdate >= 3
       ) {
         addReminderIfNew({

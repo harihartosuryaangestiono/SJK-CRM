@@ -97,7 +97,8 @@ export async function PATCH(req: NextRequest, { params }: Props) {
       lastContactDate,
       lastFollowUpDate,
       blacklistReason,
-      blacklistNotes
+      blacklistNotes,
+      curated
     } = body
 
     const updateData: any = {}
@@ -165,6 +166,10 @@ export async function PATCH(req: NextRequest, { params }: Props) {
       updateData.blacklistNotes = blacklistNotes
       auditLogs.push(`blacklistNotes updated`)
     }
+    if (curated !== undefined && curated !== current.curated) {
+      updateData.curated = curated
+      auditLogs.push(`kurasi diupdate ke ${curated ? 'Sudah Dikurasi' : 'Belum Dikurasi'}`)
+    }
 
     // Status change logic
     if (status !== undefined && status !== current.status) {
@@ -181,7 +186,7 @@ export async function PATCH(req: NextRequest, { params }: Props) {
       })
 
       // Create ContactHistory record for contact-type status changes
-      const contactStatuses = ['Sudah Dihubungi', 'Menunggu Balasan', 'No Response', 'Follow Up 1', 'Follow Up 2']
+      const contactStatuses = ['Sudah Dihubungi', 'No Response', 'Follow Up 1', 'Follow Up 2']
       if (contactStatuses.includes(status)) {
         const contactVia = body.contactVia || 'whatsapp'
         await prisma.contactHistory.create({
