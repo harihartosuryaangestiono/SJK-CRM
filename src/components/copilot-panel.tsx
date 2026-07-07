@@ -6,6 +6,7 @@ import { Sparkles, X, Send, Loader2, MessageSquarePlus, Copy, Check, Maximize2 }
 import Link from 'next/link'
 import { toast } from 'sonner'
 import type { CopilotStructuredResponse } from '@/lib/ai/types'
+import SuggestedQuestions from '@/components/suggested-questions'
 
 type Message = {
   id: string
@@ -58,6 +59,7 @@ export default function CopilotPanel() {
   const [loading, setLoading] = useState(false)
   const [conversationId, setConversationId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [suggestedFollowUps, setSuggestedFollowUps] = useState<string[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -96,6 +98,7 @@ export default function CopilotPanel() {
     }
     setMessages(prev => [...prev, userMsg])
     setInput('')
+    setSuggestedFollowUps([])
     setLoading(true)
 
     try {
@@ -116,6 +119,7 @@ export default function CopilotPanel() {
       }
 
       setConversationId(json.conversationId)
+      setSuggestedFollowUps(json.suggestedFollowUps || [])
       setMessages(prev => [
         ...prev,
         {
@@ -136,6 +140,7 @@ export default function CopilotPanel() {
     setMessages([])
     setConversationId(null)
     setInput('')
+    setSuggestedFollowUps([])
   }
 
   const handleCopy = async (msg: Message) => {
@@ -274,6 +279,12 @@ export default function CopilotPanel() {
 
             {/* Input */}
             <div className="shrink-0 px-4 py-3 border-t border-[#E5E5EA] dark:border-[#38383A] bg-[#FAFAFA] dark:bg-[#1C1C1E]">
+              <SuggestedQuestions
+                questions={suggestedFollowUps}
+                onSelect={sendMessage}
+                disabled={loading}
+                label="Pertanyaan lanjutan"
+              />
               <div className="flex items-end gap-2">
                 <textarea
                   ref={inputRef}

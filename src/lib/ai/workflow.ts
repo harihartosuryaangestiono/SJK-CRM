@@ -1,15 +1,7 @@
 import prisma from '@/lib/prisma'
+import type { WorkflowTask } from './types'
 
-export type WorkflowTask = {
-  id: string
-  priority: 1 | 2 | 3
-  category: 'follow_up' | 're_approach' | 'sow' | 'reminder' | 'deal' | 'blacklist' | 'campaign'
-  title: string
-  description: string
-  dueDate?: string
-  affiliateUsername?: string
-  href: string
-}
+export type { WorkflowTask } from './types'
 
 export async function generateWorkflowTasks(): Promise<WorkflowTask[]> {
   const now = new Date()

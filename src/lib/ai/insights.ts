@@ -1,14 +1,7 @@
 import prisma from '@/lib/prisma'
+import type { AIInsight } from './types'
 
-export type AIInsight = {
-  id: string
-  type: 'positive' | 'warning' | 'critical' | 'info'
-  title: string
-  message: string
-  metric?: string
-  action?: string
-  href?: string
-}
+export type { AIInsight } from './types'
 
 export async function generateInsights(): Promise<AIInsight[]> {
   const now = new Date()

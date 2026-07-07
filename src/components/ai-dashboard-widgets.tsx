@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Sparkles, TrendingUp, AlertTriangle, Info, ChevronRight, Loader2, Zap, ListChecks } from 'lucide-react'
-import type { AIInsight } from '@/lib/ai/insights'
-import type { WorkflowTask } from '@/lib/ai/workflow'
+import type { AIInsight, WorkflowTask } from '@/lib/ai/types'
 
 const INSIGHT_ICONS = {
   positive: TrendingUp,

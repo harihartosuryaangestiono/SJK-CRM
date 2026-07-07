@@ -1,22 +1,7 @@
 import prisma from '@/lib/prisma'
+import type { HealthCategory, HealthScoreResult } from './types'
 
-export type HealthCategory = 'Excellent' | 'Good' | 'Fair' | 'Needs Attention' | 'Critical'
-
-export type HealthScoreResult = {
-  score: number
-  category: HealthCategory
-  factors: {
-    activity: number
-    responseSpeed: number
-    dealHistory: number
-    revenue: number
-    videoCompletion: number
-    sowCompletion: number
-    communication: number
-    growth: number
-  }
-  narrative: string
-}
+export type { HealthCategory, HealthScoreResult } from './types'
 
 function getCategory(score: number): HealthCategory {
   if (score >= 80) return 'Excellent'
@@ -196,12 +181,4 @@ export async function getTopHealthScores(limit = 5) {
     .filter((s): s is NonNullable<typeof s> => s !== null)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
-}
-
-export const CATEGORY_COLORS: Record<HealthCategory, string> = {
-  Excellent: 'text-[#34C759] bg-[#34C759]/10 border-[#34C759]/25',
-  Good: 'text-[#007AFF] bg-[#007AFF]/10 border-[#007AFF]/25',
-  Fair: 'text-[#FF9F0A] bg-[#FF9F0A]/10 border-[#FF9F0A]/25',
-  'Needs Attention': 'text-[#FF6723] bg-[#FF6723]/10 border-[#FF6723]/25',
-  Critical: 'text-[#FF3B30] bg-[#FF3B30]/10 border-[#FF3B30]/25',
 }

@@ -3,16 +3,9 @@ import { generateInsights } from './insights'
 import { generateWorkflowTasks } from './workflow'
 import { detectAnomalies } from './anomaly'
 import { generateBusinessAnalytics } from './analyst'
+import type { ProactiveAlert } from './types'
 
-export type ProactiveAlert = {
-  id: string
-  type: 'insight' | 'workflow' | 'anomaly' | 'analytics'
-  priority: 'critical' | 'high' | 'medium'
-  title: string
-  message: string
-  href?: string
-  createdAt: string
-}
+export type { ProactiveAlert } from './types'
 
 export async function generateProactiveAlerts(): Promise<ProactiveAlert[]> {
   const now = new Date().toISOString()

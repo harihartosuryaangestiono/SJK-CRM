@@ -5,6 +5,7 @@ import { getSessionUser } from '@/lib/auth'
 import { buildCRMContext, buildFallbackResponse, formatContextForPrompt } from '@/lib/ai/context'
 import { generateCopilotResponse, structuredToMarkdown } from '@/lib/ai/gemini'
 import { buildChatPrompt } from '@/lib/ai/system-prompt'
+import { generateSuggestedFollowUps } from '@/lib/ai/suggested-questions'
 import type { CopilotPageContext } from '@/lib/ai/types'
 
 const chatSchema = z.object({
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
 
     const finalStructured = structured ?? buildFallbackResponse(snapshot)
     const assistantContent = structuredToMarkdown(finalStructured)
+    const suggestedFollowUps = generateSuggestedFollowUps(message, snapshot, finalStructured)
 
     const assistantMessage = await prisma.copilotMessage.create({
       data: {
@@ -103,6 +105,7 @@ export async function POST(req: NextRequest) {
         createdAt: assistantMessage.createdAt.toISOString(),
       },
       provider,
+      suggestedFollowUps,
     })
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Unknown error'

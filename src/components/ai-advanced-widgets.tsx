@@ -13,9 +13,7 @@ import {
   ChevronRight,
   AlertTriangle,
 } from 'lucide-react'
-import type { MetricComparison } from '@/lib/ai/analyst'
-import type { Anomaly } from '@/lib/ai/anomaly'
-import type { Prediction } from '@/lib/ai/predictions'
+import type { MetricComparison, Anomaly, Prediction } from '@/lib/ai/types'
 
 const SEVERITY_COLORS = {
   high: 'border-[#FF3B30]/30 bg-[#FF3B30]/5',

@@ -1,13 +1,7 @@
 import prisma from '@/lib/prisma'
+import type { MetricComparison } from './types'
 
-export type MetricComparison = {
-  label: string
-  current: number
-  previous: number
-  changePct: number
-  trend: 'up' | 'down' | 'flat'
-  unit?: string
-}
+export type { MetricComparison } from './types'
 
 export type BusinessAnalytics = {
   generatedAt: string

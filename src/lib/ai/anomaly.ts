@@ -1,25 +1,7 @@
 import prisma from '@/lib/prisma'
+import type { Anomaly, AnomalyType } from './types'
 
-export type AnomalyType =
-  | 'duplicate_wa'
-  | 'duplicate_profile'
-  | 'missing_data'
-  | 'inactive_creator'
-  | 'missing_video'
-  | 'overdue_sow'
-  | 'low_response'
-  | 'incomplete_campaign'
-
-export type Anomaly = {
-  id: string
-  type: AnomalyType
-  severity: 'low' | 'medium' | 'high'
-  title: string
-  description: string
-  count: number
-  entities?: { id: string; label: string; href: string }[]
-  href?: string
-}
+export type { Anomaly, AnomalyType } from './types'
 
 export async function detectAnomalies(): Promise<Anomaly[]> {
   const now = new Date()

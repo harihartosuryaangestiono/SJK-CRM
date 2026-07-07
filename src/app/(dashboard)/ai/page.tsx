@@ -17,8 +17,8 @@ import {
   Bell,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import type { CopilotStructuredResponse } from '@/lib/ai/types'
-import type { ProactiveAlert } from '@/lib/ai/proactive-alerts'
+import type { CopilotStructuredResponse, ProactiveAlert } from '@/lib/ai/types'
+import SuggestedQuestions from '@/components/suggested-questions'
 
 type Message = {
   id: string
@@ -84,6 +84,7 @@ function AIWorkspaceContent() {
   const [loadingConversations, setLoadingConversations] = useState(true)
   const [alerts, setAlerts] = useState<ProactiveAlert[]>([])
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [suggestedFollowUps, setSuggestedFollowUps] = useState<string[]>([])
   const [initialSent, setInitialSent] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -150,6 +151,7 @@ function AIWorkspaceContent() {
 
     setMessages(prev => [...prev, { id: `user-${Date.now()}`, role: 'user', content: trimmed }])
     setInput('')
+    setSuggestedFollowUps([])
     setLoading(true)
 
     try {
@@ -169,6 +171,7 @@ function AIWorkspaceContent() {
       }
 
       setActiveId(json.conversationId)
+      setSuggestedFollowUps(json.suggestedFollowUps || [])
       setMessages(prev => [
         ...prev,
         {
@@ -190,6 +193,7 @@ function AIWorkspaceContent() {
     setActiveId(null)
     setMessages([])
     setInput('')
+    setSuggestedFollowUps([])
     inputRef.current?.focus()
   }
 
@@ -402,6 +406,12 @@ function AIWorkspaceContent() {
             )}
           </div>
           <div className="shrink-0 p-4 border-t border-[#E5E5EA] dark:border-[#38383A]">
+            <SuggestedQuestions
+              questions={suggestedFollowUps}
+              onSelect={sendMessage}
+              disabled={loading}
+              label="Pertanyaan lanjutan"
+            />
             <div className="flex items-end gap-2">
               {activeId && (
                 <button onClick={handleExportChat} className="h-10 w-10 shrink-0 flex items-center justify-center rounded-xl border border-[#E5E5EA] dark:border-[#38383A] text-[#8E8E93] hover:text-[#007AFF] cursor-pointer" title="Export chat">

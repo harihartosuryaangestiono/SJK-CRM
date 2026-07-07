@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { Heart, Loader2 } from 'lucide-react'
-import type { HealthScoreResult } from '@/lib/ai/health-score'
-import { CATEGORY_COLORS } from '@/lib/ai/health-score'
+import type { HealthScoreResult } from '@/lib/ai/types'
+import { HEALTH_CATEGORY_COLORS } from '@/lib/ai/types'
 
 const FACTOR_LABELS: Record<string, string> = {
   activity: 'Activity',
@@ -40,7 +40,7 @@ export default function AffiliateHealthScore({ affiliateId }: { affiliateId: str
 
   if (!health) return null
 
-  const colorClass = CATEGORY_COLORS[health.category]
+  const colorClass = HEALTH_CATEGORY_COLORS[health.category]
   const circumference = 2 * Math.PI * 36
   const offset = circumference - (health.score / 100) * circumference
 

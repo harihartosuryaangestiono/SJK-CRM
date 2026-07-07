@@ -1,16 +1,7 @@
 import prisma from '@/lib/prisma'
+import type { Prediction } from './types'
 
-export type Prediction = {
-  id: string
-  type: 'revenue' | 'gmv' | 'deal_probability' | 'sow_completion' | 'churn' | 'top_performer'
-  title: string
-  value: string
-  confidence: 'high' | 'medium' | 'low'
-  confidencePct: number
-  reasoning: string
-  affiliateUsername?: string
-  href?: string
-}
+export type { Prediction } from './types'
 
 function confidenceFromSampleSize(n: number): { level: 'high' | 'medium' | 'low'; pct: number } {
   if (n >= 30) return { level: 'high', pct: 85 }
