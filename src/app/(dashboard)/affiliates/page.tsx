@@ -89,7 +89,7 @@ interface Affiliate {
   status: string
   priority: string
   pic: { name: string } | null
-  campaign: { name: string } | null
+  campaign: { id: string; name: string } | null
 }
 
 export default function AffiliateListingPage() {
@@ -454,6 +454,25 @@ export default function AffiliateListingPage() {
         fetchAffiliates()
       } else {
         toast.error('Gagal memperbarui PIC.')
+      }
+    } catch (e) {
+      toast.error('Terjadi kesalahan koneksi.')
+    }
+  }
+
+  const handleInlineCampaignChange = async (id: string, campaignId: string | null) => {
+    try {
+      const res = await fetch(`/api/affiliates/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignId })
+      })
+      if (res.ok) {
+        toast.success('Campaign berhasil diperbarui!')
+        fetchAffiliates()
+      } else {
+        const data = await res.json()
+        toast.error(data.message || 'Gagal memperbarui campaign')
       }
     } catch (e) {
       toast.error('Terjadi kesalahan koneksi.')
@@ -1338,7 +1357,20 @@ export default function AffiliateListingPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-[#6E6E73] dark:text-[#8E8E93]">{item.campaign?.name || '-'}</td>
+                      <td className="py-4 px-4 text-[#6E6E73] dark:text-[#8E8E93]">
+                        <select
+                          value={item.campaign?.id || ''}
+                          onChange={(e) => handleInlineCampaignChange(item.id, e.target.value || null)}
+                          className="w-full max-w-[160px] bg-[#F5F5F7] dark:bg-zinc-800 border border-[#E5E5EA] dark:border-[#38383A] rounded-lg px-2 py-1 text-[10px] text-[#1D1D1F] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#007AFF]/40"
+                        >
+                          <option value="">Unassigned</option>
+                          {campaigns.map(campaignOption => (
+                            <option key={campaignOption.id} value={campaignOption.id}>
+                              {campaignOption.name}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
                       {/* Quick Inline Status Badge */}
                       <td className="py-4 px-4">
                         <div className="relative">

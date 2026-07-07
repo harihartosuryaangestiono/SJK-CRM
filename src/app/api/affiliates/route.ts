@@ -203,6 +203,14 @@ export async function PATCH(req: NextRequest) {
     let activityDetails = ''
     let logAction = ''
 
+    let originalAffiliates: Array<{ id: string; status: string; campaignId: string | null; picId: string | null }> = []
+    if (action === 'change-status') {
+      originalAffiliates = await prisma.affiliate.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, status: true, campaignId: true, picId: true }
+      })
+    }
+
     if (action === 'assign-pic') {
       updateData.picId = value || null
       const picUser = value ? await prisma.user.findUnique({ where: { id: value }, select: { name: true } }) : null
@@ -259,6 +267,37 @@ export async function PATCH(req: NextRequest) {
       data: updateData
     })
 
+    // If changing status to Deal, create missing Deal records
+    if (action === 'change-status' && value === 'Deal') {
+      const dealPromises = originalAffiliates.map(async (affiliate) => {
+        if (!affiliate.campaignId) return
+
+        const existingDeal = await prisma.deal.findFirst({
+          where: {
+            affiliateId: affiliate.id,
+            campaignId: affiliate.campaignId,
+            deletedAt: null
+          }
+        })
+
+        if (!existingDeal) {
+          await prisma.deal.create({
+            data: {
+              affiliateId: affiliate.id,
+              campaignId: affiliate.campaignId,
+              picId: affiliate.picId || user.id,
+              nominal: 0.0,
+              product: 'Sample Product',
+              targetVideo: 1,
+              statusCampaign: 'In Progress',
+              progressCampaign: 'NOT_STARTED'
+            }
+          })
+        }
+      })
+      await Promise.all(dealPromises)
+    }
+
     // Log activities for each updated creator
     const activities = ids.map(id => ({
       affiliateId: id,
@@ -279,10 +318,12 @@ export async function PATCH(req: NextRequest) {
 
       const statusHistories = affiliates.map(aff => ({
         affiliateId: aff.id,
-        oldStatus: aff.status, // Note: updateMany was already run so they have the new status in db, but we record transition. Let's make it simpler:
+        oldStatus: aff.status,
         newStatus: value
       }))
-      // Since updateMany runs before this, we record transition. Let's assume they transitioned to value.
+      if (statusHistories.length > 0) {
+        await prisma.statusHistory.createMany({ data: statusHistories })
+      }
     }
 
     return NextResponse.json({ success: true, count: ids.length })
