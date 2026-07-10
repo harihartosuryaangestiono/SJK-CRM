@@ -184,7 +184,11 @@ export default function ContactPage() {
       const res = await fetch(`/api/affiliates/${selectedAffiliate.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: response, lastContactDate: now })
+        body: JSON.stringify({
+          status: response,
+          lastContactDate: now,
+          contactVia: pendingContactType || 'whatsapp'
+        })
       })
       if (res.ok) {
         // Mark as contacted in this session

@@ -82,29 +82,9 @@ async function getPeriodStats(start: Date, end: Date, picId?: string) {
   const uniqueContactedIds = Array.from(new Set(contactedHist.map(h => h.affiliateId)))
   const totalContacted = uniqueContactedIds.length
 
-  const [waContacts, tiktokContacts, instagramContacts] = await Promise.all([
-    prisma.contactHistory.count({
-      where: {
-        contactDate: { gte: start, lte: end },
-        channel: { contains: 'whatsapp', mode: 'insensitive' },
-        ...picFilterHist,
-      },
-    }),
-    prisma.contactHistory.count({
-      where: {
-        contactDate: { gte: start, lte: end },
-        channel: { contains: 'TikTok', mode: 'insensitive' },
-        ...picFilterHist,
-      },
-    }),
-    prisma.contactHistory.count({
-      where: {
-        contactDate: { gte: start, lte: end },
-        channel: { contains: 'Instagram', mode: 'insensitive' },
-        ...picFilterHist,
-      },
-    }),
-  ])
+  const waContacts = 0
+  const tiktokContacts = 0
+  const instagramContacts = 0
 
   const [followUp1, followUp2, noResponse, rejected, joined, blacklisted] = await Promise.all([
     prisma.affiliate.count({
@@ -366,9 +346,9 @@ export async function GET(req: NextRequest) {
       const intervalDeals = deals.filter(d => d.dealDate >= i.start && d.dealDate <= i.end)
       const intervalCompletedDeals = completedDeals.filter(d => d.updatedAt >= i.start && d.updatedAt <= i.end)
 
-      const wa = intervalContacts.filter(c => c.channel.toLowerCase().includes('whatsapp')).length
-      const dm = intervalContacts.filter(c => c.channel.toLowerCase().includes('instagram')).length
-      const tiktok = intervalContacts.filter(c => c.channel.toLowerCase().includes('tiktok')).length
+      const wa = 0
+      const dm = 0
+      const tiktok = 0
       const fu1 = intervalAffiliates.filter(a => a.status === 'Follow Up 1').length
       const fu2 = intervalAffiliates.filter(a => a.status === 'Follow Up 2').length
       const noResp = intervalAffiliates.filter(a => a.status === 'No Response').length
