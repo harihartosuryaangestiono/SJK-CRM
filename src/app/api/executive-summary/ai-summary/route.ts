@@ -3,6 +3,25 @@ import { getSessionUser } from '@/lib/auth'
 import { generateCopilotResponse } from '@/lib/ai/gemini'
 import { buildChatPrompt } from '@/lib/ai/system-prompt'
 
+function buildExecutiveFallbackResponse(s: any, range: string) {
+  const rangeLabel = range.replace('_', ' ')
+  const totalContacted = s.totalContacted?.total || 0
+  const joined = s.joined?.total || 0
+  const revenue = s.revenue?.total || 0
+  const joinRate = s.joinRate?.total || 0
+  const activeSow = s.activeSow?.total || 0
+  const completedSow = s.completedSow?.total || 0
+  const commission = s.commission?.total || 0
+
+  return {
+    summary: `Analisis performa CRM periode ${rangeLabel} mencatatkan total ${totalContacted} affiliate dihubungi dengan ${joined} creator bergabung ke jaringan.`,
+    analysis: `Dari outreach tersebut, diperoleh join rate sebesar ${joinRate.toFixed(1)}%. Revenue kontrak SOW yang terbentuk bernilai Rp ${revenue.toLocaleString('id-ID')} dengan insentif komisi PIC teralokasi sebesar Rp ${commission.toLocaleString('id-ID')}.`,
+    insight: `Saat ini terdapat ${activeSow} pengerjaan SOW yang sedang berlangsung (In Progress) dan ${completedSow} SOW telah diselesaikan. Konversi deal rate tercatat sebesar ${(s.dealRate?.total || 0).toFixed(1)}%.`,
+    recommendation: `Optimalkan interaksi dengan ${s.noResponse?.total || 0} prospek yang belum merespons, serta dorong penyelesaian ${s.activeSow?.total || 0} SOW aktif agar segera menjadi revenue terealisasi.`,
+    nextAction: `Review daftar reminder follow-up yang tertunda untuk meningkatkan respon, dan pantau status pengiriman sampel pada SOW yang berjalan.`
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const user = await getSessionUser()
@@ -67,16 +86,27 @@ Completion Rate: ${s.completionRate?.total || 0}%
       userMessage: `Buat ringkasan eksekutif analitik tentang performa CRM periode ${range} saat ini dalam 4-5 poin utama (Bahasa Indonesia). Cantumkan performa secara keseluruhan, pergerakan rate (join rate / response rate), status pengerjaan video SOW, dan berikan 2 rekomendasi tindakan strategis terbaik hari ini berdasarkan data tersebut.`,
     })
 
-    const { structured, provider } = await generateCopilotResponse(prompt)
+    let structured = null
+    let providerName = 'fallback'
+
+    try {
+      const res = await generateCopilotResponse(prompt)
+      structured = res.structured
+      providerName = res.provider
+    } catch (e) {
+      console.warn('Gemini generate failed, switching to local analytical fallback:', e)
+    }
+
+    const finalStructured = structured || buildExecutiveFallbackResponse(s, range)
     
     return NextResponse.json({
       success: true,
-      summary: structured?.summary || 'Gagal memproses ringkasan eksekutif AI.',
-      analysis: structured?.analysis || '',
-      insight: structured?.insight || '',
-      recommendation: structured?.recommendation || '',
-      nextAction: structured?.nextAction || '',
-      provider,
+      summary: finalStructured.summary,
+      analysis: finalStructured.analysis || '',
+      insight: finalStructured.insight || '',
+      recommendation: finalStructured.recommendation || '',
+      nextAction: finalStructured.nextAction || '',
+      provider: providerName,
     })
   } catch (error: any) {
     console.error('Executive Summary AI error:', error)
