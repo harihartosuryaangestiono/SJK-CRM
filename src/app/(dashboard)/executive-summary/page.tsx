@@ -584,33 +584,6 @@ export default function ExecutiveSummaryPage() {
         </div>
       </div>
 
-      {/* Sales Pipeline Funnel */}
-      <div className="bg-white dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-[#38383A] rounded-[24px] p-6 shadow-2xs">
-        <h3 className="text-sm font-semibold text-[#1D1D1F] dark:text-white mb-6">Sales Funnel Affiliate & SOW</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-3">
-          {data.funnel.map((stage: any, idx: number) => {
-            const nextStage = data.funnel[idx + 1]
-            const dropoff = nextStage ? (nextStage.count / (stage.count || 1)) * 100 : null
-            return (
-              <div key={stage.name} className="relative flex flex-col justify-between p-4 bg-[#F5F5F7] dark:bg-[#1E1E1F] border border-[#E5E5EA]/40 dark:border-[#38383A]/40 rounded-2xl">
-                <div>
-                  <span className="text-[9px] font-bold text-[#8E8E93] block uppercase tracking-wider">Tahap {idx + 1}</span>
-                  <h4 className="text-[11.5px] font-bold text-[#1D1D1F] dark:text-white leading-tight mt-1">{stage.name}</h4>
-                </div>
-                <div className="mt-4 flex items-end justify-between">
-                  <span className="text-lg font-black text-[#007AFF]">{stage.count}</span>
-                  {dropoff !== null && (
-                    <span className="text-[9.5px] font-bold text-[#34C759] bg-[#34C759]/10 border border-[#34C759]/20 px-1.5 py-0.5 rounded-md">
-                      {dropoff.toFixed(0)}%
-                    </span>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
       {/* Summary Table Section */}
       <div className="bg-white dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-[#38383A] rounded-[24px] p-6 shadow-2xs overflow-hidden">
         <div className="flex items-center justify-between border-b border-[#E5E5EA] dark:border-[#38383A]/60 pb-4 mb-5">
