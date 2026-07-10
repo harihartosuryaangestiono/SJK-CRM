@@ -64,7 +64,19 @@ function Sparkline({ data, color }: { data: { value: number }[], color: string }
 }
 
 function KPICard({ title, value, change, trend, desc, color, sparklineData }: KPICardProps) {
-  const isPositive = change >= 0
+  let badgeColor = 'text-[#8E8E93]'
+  let Icon = null
+  let prefix = ''
+
+  if (change > 0) {
+    badgeColor = 'text-[#34C759]'
+    Icon = TrendingUp
+    prefix = '+'
+  } else if (change < 0) {
+    badgeColor = 'text-[#FF3B30]'
+    Icon = TrendingDown
+  }
+
   return (
     <div className="bg-white dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-[#38383A] rounded-[24px] p-5 flex flex-col justify-between min-h-[140px] shadow-2xs hover:shadow-xs transition-all duration-300">
       <div className="flex items-start justify-between">
@@ -76,9 +88,9 @@ function KPICard({ title, value, change, trend, desc, color, sparklineData }: KP
           {value}
         </div>
         <div className="flex items-center gap-1.5 mt-2">
-          <span className={`inline-flex items-center text-[10.5px] font-bold ${isPositive ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-            {isPositive ? <TrendingUp className="h-3 w-3 mr-0.5" /> : <TrendingDown className="h-3 w-3 mr-0.5" />}
-            {isPositive ? '+' : ''}{change}%
+          <span className={`inline-flex items-center text-[10.5px] font-bold ${badgeColor}`}>
+            {Icon && <Icon className="h-3 w-3 mr-0.5" />}
+            {prefix}{change}%
           </span>
           <span className="text-[10px] text-[#8E8E93] font-medium truncate">{desc}</span>
         </div>
