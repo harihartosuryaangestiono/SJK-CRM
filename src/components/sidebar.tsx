@@ -89,30 +89,30 @@ export default function Sidebar() {
         isCollapsed ? 'w-[68px]' : 'w-[240px]'
       }`}
     >
-      {/* Header */}
-      <div>
-        <div className="flex h-[56px] items-center justify-between px-3.5 border-b border-[#F2F2F7] dark:border-[#2C2C2E]">
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[#FBF7F2] overflow-hidden shrink-0 p-1">
-              <img src="/logo-sjk.svg" alt="SJ Kitchen" className="max-h-full max-w-full object-contain" />
-            </div>
-            {!isCollapsed && (
-              <div className="flex flex-col truncate leading-tight">
-                <span className="font-bold text-[13px] tracking-tight text-[#1D1D1F] dark:text-white">SJ Kitchen</span>
-                <span className="text-[10px] text-[#8E8E93] font-medium">CRM Affiliate</span>
-              </div>
-            )}
+      {/* Header - Fixed top */}
+      <div className="flex h-[56px] items-center justify-between px-3.5 border-b border-[#F2F2F7] dark:border-[#2C2C2E] shrink-0">
+        <div className="flex items-center gap-2.5 overflow-hidden">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[#FBF7F2] overflow-hidden shrink-0 p-1">
+            <img src="/logo-sjk.svg" alt="SJ Kitchen" className="max-h-full max-w-full object-contain" />
           </div>
-          <button
-            onClick={toggle}
-            className="hidden md:flex h-5 w-5 items-center justify-center rounded-full text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors cursor-pointer"
-          >
-            {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
-          </button>
+          {!isCollapsed && (
+            <div className="flex flex-col truncate leading-tight">
+              <span className="font-bold text-[13px] tracking-tight text-[#1D1D1F] dark:text-white">SJ Kitchen</span>
+              <span className="text-[10px] text-[#8E8E93] font-medium">CRM Affiliate</span>
+            </div>
+          )}
         </div>
+        <button
+          onClick={toggle}
+          className="hidden md:flex h-5 w-5 items-center justify-center rounded-full text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors cursor-pointer"
+        >
+          {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+        </button>
+      </div>
 
-        {/* Navigation Groups */}
-        <nav className="p-2.5 space-y-4 mt-1">
+      {/* Navigation Groups - Scrollable middle */}
+      <div className="flex-1 overflow-y-auto py-1 scrollbar-thin select-none">
+        <nav className="p-2.5 space-y-4">
           {NAV_GROUPS.map((group) => (
             <div key={group.label}>
               {!isCollapsed && (
@@ -150,8 +150,8 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      {/* User Footer */}
-      <div className="p-2.5 border-t border-[#F2F2F7] dark:border-[#2C2C2E]">
+      {/* User Footer - Fixed bottom */}
+      <div className="p-2.5 border-t border-[#F2F2F7] dark:border-[#2C2C2E] shrink-0">
         <div className={`flex items-center justify-between gap-2 rounded-[12px] p-2.5 hover:bg-[#F2F2F7] dark:hover:bg-[#2C2C2E] transition-colors ${isCollapsed ? 'justify-center' : ''}`}>
           <div className="flex items-center gap-2 overflow-hidden">
             <div className="h-7 w-7 rounded-[8px] bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-[#38383A] flex items-center justify-center shrink-0">
