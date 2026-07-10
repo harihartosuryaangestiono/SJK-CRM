@@ -108,6 +108,16 @@ async function main() {
         content: 'Halo Kak [Username]! Menindaklanjuti tawaran kolaborasi kemarin, apakah Kakak tertarik mencoba free product dari SJ Kitchen? Kabari ya Kak jika ada waktu senggang. Have a nice day!'
       },
       {
+        name: 'Template Perkenalan (Tiktok)',
+        type: 'introduction',
+        content: 'Hii kak! Aku Selly dari SJ Kitchen\n\nLagi buka slot affiliate buat creator food/daily vlog — ada commission-nya!\n\nBuat yang join, kita kirim free sample Tempe Tabur dulu supaya kakak bisa nyobain sendiri sebelum konten.\nKalau tertarik, boleh lanjut di sini atau chat WA kita ya kak 😊\n\nhttps://wa.me/628111319997'
+      },
+      {
+        name: 'Template Follow Up (Tiktok)',
+        type: 'follow-up',
+        content: 'Hii kak! Aku Selly dari SJ Kitchen\n\nLagi buka slot affiliate buat creator food/daily vlog — ada commission-nya!\n\nBuat yang join, kita kirim free sample Tempe Tabur dulu supaya kakak bisa nyobain sendiri sebelum konten.\nKalau tertarik, boleh lanjut di sini atau chat WA kita ya kak 😊\n\nhttps://wa.me/628111319997'
+      },
+      {
         name: 'Template Reminder Kirim Video',
         type: 'reminder',
         content: 'Halo Kak [Username]! Semoga sehat selalu. Sekadar mengingatkan untuk postingan video review SJ Kitchen sesuai kesepakatan target tanggal [Deadline]. Jika produk sudah siap atau ada kendala, kabari kami ya Kak. Terima kasih banyak!'
