@@ -69,6 +69,7 @@ export const dealSchema = z.object({
 
 // Chat Template validation
 export const chatTemplateSchema = z.object({
+  id: z.string().optional(),
   name: z.string().min(3, { message: 'Nama template minimal 3 karakter' }),
   type: z.string().min(1, { message: 'Tipe template wajib dipilih' }),
   content: z.string().min(10, { message: 'Konten template minimal 10 karakter' }),

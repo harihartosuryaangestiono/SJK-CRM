@@ -32,9 +32,25 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const parsed = chatTemplateSchema.parse(body)
 
-    const template = await prisma.chatTemplate.create({
-      data: parsed
-    })
+    let template
+    if (parsed.id) {
+      template = await prisma.chatTemplate.update({
+        where: { id: parsed.id },
+        data: {
+          name: parsed.name,
+          type: parsed.type,
+          content: parsed.content
+        }
+      })
+    } else {
+      template = await prisma.chatTemplate.create({
+        data: {
+          name: parsed.name,
+          type: parsed.type,
+          content: parsed.content
+        }
+      })
+    }
 
     return NextResponse.json({ success: true, data: template })
   } catch (error: any) {
