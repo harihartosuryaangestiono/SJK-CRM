@@ -481,7 +481,9 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-3 mt-5">
             {funnel.map((stage) => {
               const maxCount = Math.max(...funnel.map(f => f.count))
-              const pct = Math.max(15, (stage.count / (maxCount || 1)) * 100)
+              const realPct = (stage.count / (maxCount || 1)) * 100
+              const barWidth = Math.max(15, realPct)
+              const pctLabel = realPct >= 1 || realPct === 0 ? `${realPct.toFixed(0)}%` : `${realPct.toFixed(1)}%`
               return (
                 <div key={stage.name} className="group flex items-center w-full">
                   <div className="w-[110px] text-[11px] font-medium text-[#6E6E73] dark:text-[#8E8E93] truncate pr-2">
@@ -491,11 +493,11 @@ export default function DashboardPage() {
                     <div
                       className="absolute left-0 top-0 bottom-0 opacity-15 dark:opacity-25 transition-all duration-500 rounded-r-full"
                       style={{
-                        width: `${pct}%`,
+                        width: `${barWidth}%`,
                         backgroundColor: stage.fill === '#3b82f6' ? '#007AFF' : stage.fill,
                       }}
                     />
-                    <span className="text-[9px] font-bold text-[#6E6E73] dark:text-[#8E8E93] z-10">{pct.toFixed(0)}%</span>
+                    <span className="text-[9px] font-bold text-[#6E6E73] dark:text-[#8E8E93] z-10">{pctLabel}</span>
                     <span className="text-[10px] font-bold text-[#1D1D1F] dark:text-white z-10">
                       {stage.count} <span className="text-[9px] font-normal text-[#6E6E73] dark:text-[#8E8E93]">creators</span>
                     </span>
