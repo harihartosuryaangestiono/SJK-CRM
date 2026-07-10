@@ -86,7 +86,7 @@ async function getPeriodStats(start: Date, end: Date, picId?: string) {
     prisma.contactHistory.count({
       where: {
         contactDate: { gte: start, lte: end },
-        channel: 'WhatsApp',
+        channel: { contains: 'whatsapp', mode: 'insensitive' },
         ...picFilterHist,
       },
     }),
@@ -366,7 +366,7 @@ export async function GET(req: NextRequest) {
       const intervalDeals = deals.filter(d => d.dealDate >= i.start && d.dealDate <= i.end)
       const intervalCompletedDeals = completedDeals.filter(d => d.updatedAt >= i.start && d.updatedAt <= i.end)
 
-      const wa = intervalContacts.filter(c => c.channel === 'WhatsApp').length
+      const wa = intervalContacts.filter(c => c.channel.toLowerCase().includes('whatsapp')).length
       const dm = intervalContacts.filter(c => c.channel.toLowerCase().includes('instagram')).length
       const tiktok = intervalContacts.filter(c => c.channel.toLowerCase().includes('tiktok')).length
       const fu1 = intervalAffiliates.filter(a => a.status === 'Follow Up 1').length
