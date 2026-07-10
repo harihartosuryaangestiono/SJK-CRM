@@ -27,24 +27,24 @@
 
 /* LIGHT MODE — Apple HIG Design Tokens */
 :root {
-  --background: 240 14% 96%;
+  --background: 33 22% 95.5%; /* Soft Warm Off-White #F6F2EB */
   --foreground: 240 6% 12%;
-  --card: 0 0% 100%;
+  --card: 33 30% 98%;         /* Softer warm white #FAF7F3 */
   --card-foreground: 240 6% 12%;
-  --popover: 0 0% 100%;
+  --popover: 33 30% 98%;
   --popover-foreground: 240 6% 12%;
   --primary: 211 100% 50%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 240 9% 95%;
+  --secondary: 33 12% 93%;    /* Softer warm secondary #F1ECE2 */
   --secondary-foreground: 240 3% 43%;
-  --muted: 240 9% 95%;
+  --muted: 33 12% 93%;
   --muted-foreground: 240 3% 54%;
   --accent: 211 100% 50%;
   --accent-foreground: 0 0% 100%;
   --destructive: 3 100% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 220 13% 91%;
-  --input: 240 14% 96%;
+  --border: 33 15% 90%;       /* Soft warm border #E8E3D9 */
+  --input: 33 12% 93%;
   --ring: 211 100% 50%;
   --radius: 1.25rem;
 }
@@ -72,6 +72,30 @@
   --ring: 211 100% 52%;
 }
 
+/* Override utility colors for soft light mode */
+@layer utilities {
+  :root:not(.dark) {
+    .bg-white {
+      background-color: hsl(var(--card)) !important;
+    }
+    .bg-\[\#F5F5F7\] {
+      background-color: hsl(var(--background)) !important;
+    }
+    .bg-\[\#F5F5F7\]\/90 {
+      background-color: hsla(var(--background) / 0.9) !important;
+    }
+    .border-\[\#E5E5EA\] {
+      border-color: hsl(var(--border)) !important;
+    }
+    .border-\[\#F2F2F7\] {
+      border-color: hsl(var(--border)) !important;
+    }
+    .hover\:bg-\[\#F2F2F7\]:hover {
+      background-color: hsl(var(--muted)) !important;
+    }
+  }
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   border-color: hsl(var(--border));
@@ -95,16 +119,11 @@ body {
 
 /* === APPLE CARD === */
 .apple-card {
-  background-color: #FFFFFF;
-  border: 1px solid #E5E5EA;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
   border-radius: 20px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   transition: box-shadow 0.2s ease;
-}
-.dark .apple-card {
-  background-color: #2C2C2E;
-  border-color: #38383A;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 .apple-card:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
@@ -117,23 +136,18 @@ body {
 .apple-input {
   height: 40px;
   padding: 0 12px;
-  background-color: #F5F5F7;
-  border: 1.5px solid #E5E5EA;
+  background-color: hsl(var(--input));
+  border: 1.5px solid hsl(var(--border));
   border-radius: 10px;
   font-size: 13px;
-  color: #1D1D1F;
+  color: hsl(var(--foreground));
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   width: 100%;
 }
-.dark .apple-input {
-  background-color: #1E1E1E;
-  border-color: #38383A;
-  color: #FFFFFF;
-}
 .apple-input::placeholder { color: #8E8E93; }
 .apple-input:focus {
-  border-color: #007AFF;
+  border-color: hsl(var(--primary));
   box-shadow: 0 0 0 3px rgba(0,122,255,0.12);
 }
 
@@ -154,15 +168,13 @@ body {
 .apple-btn-secondary {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   height: 36px; padding: 0 16px;
-  background-color: #F2F2F7; color: #1D1D1F;
+  background-color: hsl(var(--secondary)); color: hsl(var(--foreground));
   font-size: 13px; font-weight: 500;
-  border-radius: 10px; border: 1.5px solid #E5E5EA; cursor: pointer;
+  border-radius: 10px; border: 1.5px solid hsl(var(--border)); cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
 }
-.dark .apple-btn-secondary { background-color: #2C2C2E; color: #FFFFFF; border-color: #38383A; }
-.apple-btn-secondary:hover { background-color: #E8E8ED; border-color: #D1D1D6; }
-.dark .apple-btn-secondary:hover { background-color: #3A3A3C; }
+.apple-btn-secondary:hover { background-color: hsl(var(--muted)); border-color: hsl(var(--border)); }
 
 /* === STATUS BADGES === */
 .badge {

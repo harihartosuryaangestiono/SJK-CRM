@@ -33,6 +33,7 @@ const NAV_GROUPS = [
     label: 'Main',
     items: [
       { label: 'Dashboard', icon: LayoutDashboard, href: '/' },
+      { label: 'Executive Summary', icon: BarChart3, href: '/executive-summary' },
       { label: 'Affiliate Listing', icon: Database, href: '/affiliates' },
       { label: 'Contact Hub', icon: MessageSquare, href: '/contact' },
       { label: 'AI Copilot', icon: Sparkles, href: '/ai' },
@@ -92,8 +93,8 @@ export default function Sidebar() {
       <div>
         <div className="flex h-[56px] items-center justify-between px-3.5 border-b border-[#F2F2F7] dark:border-[#2C2C2E]">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="h-8 w-8 rounded-[10px] overflow-hidden shrink-0">
-              <img src="/logo-sjk.svg" alt="SJ Kitchen" className="h-full w-full object-cover" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[#FBF7F2] overflow-hidden shrink-0 p-1">
+              <img src="/logo-sjk.svg" alt="SJ Kitchen" className="max-h-full max-w-full object-contain" />
             </div>
             {!isCollapsed && (
               <div className="flex flex-col truncate leading-tight">

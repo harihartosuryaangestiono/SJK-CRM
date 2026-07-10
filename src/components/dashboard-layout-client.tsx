@@ -39,21 +39,23 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
   useRealtimeSync()
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark')
-    setTheme(isDark ? 'dark' : 'light')
-  }, [])
-
-  const toggleTheme = () => {
-    const nextTheme = theme === 'light' ? 'dark' : 'light'
-    setTheme(nextTheme)
-    if (nextTheme === 'dark') {
-      document.documentElement.classList.add('dark')
-      localStorage.theme = 'dark'
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.theme = 'light'
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    
+    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      const isDark = e.matches
+      if (isDark) {
+        document.documentElement.classList.add('dark')
+        setTheme('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+        setTheme('light')
+      }
     }
-  }
+
+    handleChange(mediaQuery)
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
 
   const fetchNotifications = async () => {
     try {
@@ -170,13 +172,7 @@ export default function DashboardLayoutClient({ children }: { children: React.Re
               Live
             </div>
 
-            <button
-              onClick={toggleTheme}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-[#E5E5EA] dark:border-[#38383A] bg-white dark:bg-[#2C2C2E] text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white hover:bg-[#F2F2F7] dark:hover:bg-[#3A3A3C] transition-all cursor-pointer"
-              title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-            >
-              {theme === 'light' ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
-            </button>
+
 
             <div className="relative" ref={dropdownRef}>
               <button

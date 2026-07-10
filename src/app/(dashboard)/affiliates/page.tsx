@@ -1195,9 +1195,9 @@ export default function AffiliateListingPage() {
       )}
 
       {/* Main Table view - Desktop only */}
-      <div className="hidden md:block bg-white dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-[#38383A] rounded-[24px] overflow-hidden shadow-2xs">
+      <div className="hidden md:block bg-white dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-[#38383A] rounded-[24px] overflow-visible shadow-2xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[1400px] text-left border-collapse">
             <thead>
               <tr className="border-b border-[#E5E5EA] dark:border-[#38383A]/60 bg-[#F5F5F7] dark:bg-[#1E1E1E]/40 text-[#6E6E73] dark:text-[#8E8E93] text-[9px] uppercase font-bold tracking-wider select-none">
                 <th className="py-4 px-4 w-[40px]">

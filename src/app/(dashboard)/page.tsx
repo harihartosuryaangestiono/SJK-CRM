@@ -322,11 +322,11 @@ export default function DashboardPage() {
           </div>
 
           <div className="bg-white dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-[#38383A] rounded-[20px] p-5 shadow-2xs">
-            <span className="text-[10px] font-medium text-[#6E6E73] dark:text-[#8E8E93]">SOW Overdue</span>
-            <div className="text-2xl font-bold tracking-tight text-[#FF3B30] font-black mt-1">
-              {stats.sowOverdue || 0}
+            <span className="text-[10px] font-medium text-[#6E6E73] dark:text-[#8E8E93]">SOW Dalam Proses</span>
+            <div className="text-2xl font-bold tracking-tight text-[#007AFF] mt-1">
+              {stats.sowInProgress || 0}
             </div>
-            <p className="text-[9.5px] text-[#8E8E93] mt-1">Batas waktu terlewati</p>
+            <p className="text-[9.5px] text-[#8E8E93] mt-1">Deals sedang berjalan</p>
           </div>
 
           <div className="bg-white dark:bg-[#2C2C2E] border border-[#E5E5EA] dark:border-[#38383A] rounded-[20px] p-5 shadow-2xs">
