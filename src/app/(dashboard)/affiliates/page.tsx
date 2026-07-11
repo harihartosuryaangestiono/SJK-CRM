@@ -18,6 +18,8 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   User,
   Users,
   X,
@@ -101,6 +103,7 @@ function AffiliateListingPageContent() {
   
   const searchParams = useSearchParams()
   const router = useRouter()
+  const isFirstRender = useRef(true)
 
   // Table control states
   const [loading, setLoading] = useState(true)
@@ -250,6 +253,10 @@ function AffiliateListingPageContent() {
 
   // Debounced search trigger
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
     const delayDebounceFn = setTimeout(() => {
       changePage(1)
       fetchAffiliates()
@@ -793,6 +800,62 @@ function AffiliateListingPageContent() {
     } catch (err: any) {
       setFormError(err.message)
     }
+  }
+
+  const renderPaginationButtons = () => {
+    const pages = []
+    
+    // Always show page 1
+    pages.push(1)
+    
+    let startPage = Math.max(2, page - 2)
+    let endPage = Math.min(totalPages - 1, page + 2)
+    
+    if (page <= 3) {
+      endPage = Math.min(totalPages - 1, 5)
+    }
+    if (page >= totalPages - 2) {
+      startPage = Math.max(2, totalPages - 4)
+    }
+    
+    if (startPage > 2) {
+      pages.push('ellipsis-start')
+    }
+    
+    for (let p = startPage; p <= endPage; p++) {
+      pages.push(p)
+    }
+    
+    if (endPage < totalPages - 1) {
+      pages.push('ellipsis-end')
+    }
+    
+    if (totalPages > 1) {
+      pages.push(totalPages)
+    }
+    
+    return pages.map((p, idx) => {
+      if (p === 'ellipsis-start' || p === 'ellipsis-end') {
+        return (
+          <span key={`ellipsis-${idx}`} className="px-1.5 text-zinc-400 dark:text-zinc-500 font-medium text-xs select-none">
+            ...
+          </span>
+        )
+      }
+      return (
+        <button
+          key={p}
+          onClick={() => changePage(Number(p))}
+          className={`flex h-8 min-w-[32px] items-center justify-center rounded-lg border text-xs font-bold px-2.5 transition-all cursor-pointer ${
+            page === p
+              ? 'bg-[#007AFF] border-[#007AFF] text-white shadow-2xs'
+              : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 active:scale-[0.96] shadow-2xs'
+          }`}
+        >
+          {p}
+        </button>
+      )
+    })
   }
 
   return (
@@ -1663,23 +1726,41 @@ function AffiliateListingPageContent() {
           <span className="text-xs text-zinc-500 font-semibold">
             Menampilkan {affiliates.length} dari {totalRecords} records
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => changePage(1)}
+              disabled={page === 1}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 active:scale-[0.96] disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-xs"
+              title="Halaman Pertama"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </button>
             <button
               onClick={() => changePage(Math.max(1, page - 1))}
               disabled={page === 1}
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 active:scale-[0.96] disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-xs"
+              title="Halaman Sebelumnya"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <span className="text-xs font-bold text-zinc-750 dark:text-zinc-350 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3 py-1 rounded-lg">
-              Halaman {page} dari {totalPages}
-            </span>
+            <div className="flex items-center gap-1">
+              {renderPaginationButtons()}
+            </div>
             <button
               onClick={() => changePage(Math.min(totalPages, page + 1))}
               disabled={page === totalPages}
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 active:scale-[0.96] disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-xs"
+              title="Halaman Berikutnya"
             >
               <ChevronRight className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => changePage(totalPages)}
+              disabled={page === totalPages}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 active:scale-[0.96] disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-xs"
+              title="Halaman Terakhir"
+            >
+              <ChevronsRight className="h-4 w-4" />
             </button>
           </div>
         </div>
