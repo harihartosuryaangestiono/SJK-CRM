@@ -163,7 +163,7 @@ export default function CopilotPanel() {
       {!open && pathname !== '/ai' && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-20 md:bottom-6 right-5 z-40 h-14 w-14 rounded-full bg-[#007AFF] text-white shadow-[0_4px_24px_rgba(0,122,255,0.4)] hover:bg-[#0066DD] active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+          className="fixed bottom-24 md:bottom-20 right-5 z-40 h-14 w-14 rounded-full bg-[#007AFF] text-white shadow-[0_4px_24px_rgba(0,122,255,0.4)] hover:bg-[#0066DD] active:scale-95 transition-all flex items-center justify-center cursor-pointer"
           title="SJ Kitchen AI Copilot"
         >
           <Sparkles className="h-6 w-6" />

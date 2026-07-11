@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import * as XLSX from 'xlsx'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -92,15 +93,36 @@ interface Affiliate {
   campaign: { id: string; name: string } | null
 }
 
-export default function AffiliateListingPage() {
+function AffiliateListingPageContent() {
   // Database states
   const [affiliates, setAffiliates] = useState<Affiliate[]>([])
   const [campaigns, setCampaigns] = useState<Array<{ id: string; name: string }>>([])
   const [pics, setPics] = useState<Array<{ id: string; name: string }>>([])
   
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
   // Table control states
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
+
+  // Sync URL query parameters with component page state
+  useEffect(() => {
+    const pageParam = searchParams.get('page')
+    if (pageParam) {
+      const parsedPage = parseInt(pageParam, 10)
+      if (!isNaN(parsedPage) && parsedPage > 0) {
+        setPage(parsedPage)
+      }
+    }
+  }, [searchParams])
+
+  const changePage = (newPage: number) => {
+    setPage(newPage)
+    const params = new URLSearchParams(window.location.search)
+    params.set('page', String(newPage))
+    router.replace(`/affiliates?${params.toString()}`)
+  }
   const [totalPages, setTotalPages] = useState(1)
   const [totalRecords, setTotalRecords] = useState(0)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -229,7 +251,7 @@ export default function AffiliateListingPage() {
   // Debounced search trigger
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      setPage(1)
+      changePage(1)
       fetchAffiliates()
     }, 400)
 
@@ -1315,7 +1337,7 @@ export default function AffiliateListingPage() {
                       </td>
                       <td className="py-4 px-4 font-semibold text-[#1D1D1F] dark:text-white">
                         <div className="flex items-center gap-1">
-                          <Link href={`/affiliates/${item.id}`} className="hover:text-[#007AFF] transition-colors font-mono">
+                          <Link href={`/affiliates/${item.id}?fromPage=${page}`} className="hover:text-[#007AFF] transition-colors font-mono">
                             @{item.username}
                           </Link>
                           <a
@@ -1411,7 +1433,7 @@ export default function AffiliateListingPage() {
                       <td className="py-4 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
-                            href={`/affiliates/${item.id}`}
+                            href={`/affiliates/${item.id}?fromPage=${page}`}
                             className="bg-white dark:bg-[#2C2C2E] hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-[#E5E5EA] dark:border-[#38383A] text-xs font-bold text-[#007AFF] px-3.5 py-1.5 rounded-full active:scale-[0.98] transition-all inline-block shadow-2xs"
                           >
                             Detail
@@ -1594,7 +1616,7 @@ export default function AffiliateListingPage() {
                       onChange={() => handleSelectRow(item.id)}
                       className="rounded border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-accent"
                     />
-                    <Link href={`/affiliates/${item.id}`} className="font-bold text-zinc-800 dark:text-zinc-200 hover:text-accent font-mono text-sm">
+                    <Link href={`/affiliates/${item.id}?fromPage=${page}`} className="font-bold text-zinc-800 dark:text-zinc-200 hover:text-accent font-mono text-sm">
                       @{item.username}
                     </Link>
                   </div>
@@ -1625,7 +1647,7 @@ export default function AffiliateListingPage() {
                     <User className="h-3.5 w-3.5 text-zinc-400" />
                     {item.pic?.name || 'Unassigned'}
                   </span>
-                  <Link href={`/affiliates/${item.id}`} className="text-accent hover:underline font-bold">
+                  <Link href={`/affiliates/${item.id}?fromPage=${page}`} className="text-accent hover:underline font-bold">
                     Detail Profil →
                   </Link>
                 </div>
@@ -1643,7 +1665,7 @@ export default function AffiliateListingPage() {
           </span>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
+              onClick={() => changePage(Math.max(1, page - 1))}
               disabled={page === 1}
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 active:scale-[0.96] disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-xs"
             >
@@ -1653,7 +1675,7 @@ export default function AffiliateListingPage() {
               Halaman {page} dari {totalPages}
             </span>
             <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => changePage(Math.min(totalPages, page + 1))}
               disabled={page === totalPages}
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 active:scale-[0.96] disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer shadow-xs"
             >
@@ -2033,5 +2055,18 @@ export default function AffiliateListingPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function AffiliateListingPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="h-8 w-8 border-2 border-[#007AFF] border-t-transparent rounded-full animate-spin" />
+        <p className="text-[#6E6E73] text-sm font-medium">Memuat Listing Prospek...</p>
+      </div>
+    }>
+      <AffiliateListingPageContent />
+    </Suspense>
   )
 }

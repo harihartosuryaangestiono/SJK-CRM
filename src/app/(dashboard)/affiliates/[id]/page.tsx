@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import React, { useState, useEffect, Suspense } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft,
@@ -126,10 +126,14 @@ interface AffiliateProfile {
   deals: Deal[]
 }
 
-export default function AffiliateProfilePage() {
+function AffiliateProfilePageContent() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const id = params.id as string
+
+  const fromPage = searchParams.get('fromPage') || '1'
+  const backUrl = `/affiliates?page=${fromPage}`
 
   const [profile, setProfile] = useState<AffiliateProfile | null>(null)
   const [attachments, setAttachments] = useState<FileAttachment[]>([])
@@ -380,7 +384,7 @@ export default function AffiliateProfilePage() {
         <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-150">Error Memuat Profil</h2>
         <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">{error || 'Creator tidak ditemukan.'}</p>
         <Link
-          href="/affiliates"
+          href={backUrl}
           className="mt-5 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-250 font-bold px-4 py-2 rounded-xl text-xs inline-flex items-center gap-1.5 transition-all shadow-xs"
         >
           <ArrowLeft className="h-4 w-4" /> Kembali ke Database
@@ -449,7 +453,7 @@ export default function AffiliateProfilePage() {
       {/* Header bar */}
       <div className="flex flex-col gap-4 border-b border-zinc-100 dark:border-zinc-900 pb-5">
         <Link
-          href="/affiliates"
+          href={backUrl}
           className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-550 hover:text-zinc-900 dark:hover:text-white px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 w-fit shadow-xs"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Kembali ke Database
@@ -1312,5 +1316,18 @@ function SowDealCard({ deal, onSave }: { deal: any; onSave: () => void }) {
         </form>
       </CardContent>
     </Card>
+  )
+}
+
+export default function AffiliateProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="h-8 w-8 border-2 border-[#007AFF] border-t-transparent rounded-full animate-spin" />
+        <p className="text-[#6E6E73] text-sm font-medium">Memuat Profil Prospek...</p>
+      </div>
+    }>
+      <AffiliateProfilePageContent />
+    </Suspense>
   )
 }
