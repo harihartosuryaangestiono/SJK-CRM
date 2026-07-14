@@ -77,14 +77,14 @@ async function getPeriodStats(start: Date, end: Date, picId?: string) {
       contactDate: { gte: start, lte: end },
       ...picFilterHist,
     },
-    select: { affiliateId: true },
+    select: { affiliateId: true, channel: true },
   })
   const uniqueContactedIds = Array.from(new Set(contactedHist.map(h => h.affiliateId)))
   const totalContacted = uniqueContactedIds.length
 
-  const waContacts = 0
-  const tiktokContacts = 0
-  const instagramContacts = 0
+  const waContacts = contactedHist.filter(h => h.channel?.toLowerCase().includes('whatsapp')).length
+  const tiktokContacts = contactedHist.filter(h => h.channel?.toLowerCase().includes('tiktok')).length
+  const instagramContacts = contactedHist.filter(h => h.channel?.toLowerCase().includes('instagram') || h.channel?.toLowerCase().includes('ig') || h.channel?.toLowerCase() === 'dm').length
 
   const [followUp1, followUp2, noResponse, rejected, joined, blacklisted] = await Promise.all([
     prisma.affiliate.count({
@@ -346,9 +346,9 @@ export async function GET(req: NextRequest) {
       const intervalDeals = deals.filter(d => d.dealDate >= i.start && d.dealDate <= i.end)
       const intervalCompletedDeals = completedDeals.filter(d => d.updatedAt >= i.start && d.updatedAt <= i.end)
 
-      const wa = 0
-      const dm = 0
-      const tiktok = 0
+      const wa = intervalContacts.filter(c => c.channel?.toLowerCase().includes('whatsapp')).length
+      const dm = intervalContacts.filter(c => c.channel?.toLowerCase().includes('instagram') || c.channel?.toLowerCase().includes('ig') || c.channel?.toLowerCase() === 'dm').length
+      const tiktok = intervalContacts.filter(c => c.channel?.toLowerCase().includes('tiktok')).length
       const fu1 = intervalAffiliates.filter(a => a.status === 'Follow Up 1').length
       const fu2 = intervalAffiliates.filter(a => a.status === 'Follow Up 2').length
       const noResp = intervalAffiliates.filter(a => a.status === 'No Response').length
